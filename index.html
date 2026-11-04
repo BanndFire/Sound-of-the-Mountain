@@ -266,6 +266,7 @@ function step(S,L,inp,dt,emit){
     if(kw>S.bk){S.bk=kw;S.bx=clamp(p.x+p.w/2+p.vx*st.w,24,L.W-24);emit('warn',S.bx,p.y);}
     if(S.bd<S.bk&&S.t>=st.off+S.bk*st.P){S.bd=S.bk;S.bs=S.t;emit('bolt',S.bx,p.y);if(Math.abs(p.x+p.w/2-S.bx)<30){S.dead=true;emit('die',p.x+11,p.y+15,'bolt');return;}}
   }
+  if(L.finale&&p.x>L.finale.xl&&p.y>L.finale.yb+420){S.win=true;return;}
   if(p.y>L.H+60){S.dead=true;emit('die',p.x+11,Math.min(p.y,L.H));return;}
   if(L.chasers){
     S.hc++;
@@ -583,10 +584,10 @@ function gen(cfg){
     else B.flat(lerp(70,130,r()));
     if(metric()>=nextCp){B.flat(60,{cp:labels[Math.min(li,labels.length-1)]});li++;nextCp+=cfg.cpEvery||1400;}
   }
-  if(cfg.finaleRun){B.flat(260);const xs=B.x,N=7;let c=170;const cr=[];for(let k=0;k<N;k++){cr.push(c);c+=lerp(165,190,r());}const D=Math.round(cr[N-1]+190);cr.forEach(v=>B.crystal(v,62));B.gap(D);B.o.finale={x0:xs,x1:xs+D};}
-  B.flat(cfg.endLen||300);
+  if(cfg.finaleRun){B.flat(260);const xs=B.x,N=5,yb=B.y;let c=170;const cr=[];for(let k=0;k<N;k++){cr.push(c);c+=lerp(165,190,r());}const D=Math.round(cr[N-1]+190);cr.forEach(v=>B.crystal(v,62));B.gap(D);B.o.finale={x0:xs,x1:xs+D,xl:xs+cr[N-1]-70,yb};}
+  if(!cfg.finaleRun)B.flat(cfg.endLen||300);
   const o=B.o;
-  o.goal=[B.x-180,B.y-70];o.W=B.x;
+  o.goal=cfg.finaleRun?[B.x-60,H+900]:[B.x-180,B.y-70];o.W=B.x;
   if(cfg.swim){o.swim.push([0,110,B.x,H]);o.solids.push([0,-300,B.x,410]);}
   if(cfg.nov){
     const fr=[.3,.55,.8];let tries=0;

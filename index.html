@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Sound of the Mountain">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#101827">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
 <title>Sound of the Mountain</title>
 <style>
   :root { color-scheme: dark; --bg1:#263b5a; --bg2:#101827; --ink:#f4f6ff; --panel:#18263a; --line:#7188aa; --btn:#263c5a; --btn2:#365579; --btnline:#7891b6; --muted:#c4d1e8; --accent:#ffdc82; }
@@ -28,9 +28,46 @@
   .keys { color:var(--muted); font-size:13px; line-height:1.6; }
   button { border:1px solid var(--btnline); background:var(--btn); color:#fff; border-radius:8px; padding:8px 11px; font-weight:650; cursor:pointer; font-size:13px; }
   button:hover { background:var(--btn2); }
-  .touch { display:none; gap:8px; align-items:center; }
-  .touch button { min-width:52px; min-height:46px; font-size:18px; touch-action:none; }
-  @media (pointer:coarse) { .touch { display:flex; } }
+  button .ic{margin-right:5px}
+  .mb{display:none}
+  .touch { display:none; }
+  #rotate{display:none}
+  html,body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
+  .touch button,.btns button{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
+  @media (pointer:coarse) {
+    .touch{display:block;position:fixed;inset:0;pointer-events:none;z-index:15}
+    .pad{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;align-items:flex-end;gap:10px}
+    .pl{left:calc(16px + env(safe-area-inset-left))}.pr{right:calc(16px + env(safe-area-inset-right))}
+    .touch button{pointer-events:auto;width:62px;height:62px;min-width:0;min-height:0;padding:0;border-radius:50%;font-size:28px;background:#1b2a44;border:2px solid #9bb4dc;opacity:.55;color:#fff}
+    .touch button.sm{width:46px;height:46px;font-size:18px}
+    .touch button.jump{width:80px;height:80px;font-size:34px;background:#2f5f8a}
+    .touch button.dash{margin-bottom:40px;background:#6a3fa8}
+    .touch button.on{opacity:.95;background:#ffdc82;color:#10203a}
+  }
+  @media (pointer:coarse) and (orientation:landscape) {
+    html,body{height:100%;overflow:hidden}
+    body{display:block;min-height:0;height:100vh;height:100dvh;background:#05080f}
+    .wrap{width:100vw;height:100vh;height:100dvh;padding:0;display:flex;align-items:center;justify-content:center}
+    header{display:contents}.ttl,.keys,.note{display:none}
+    .btns{position:fixed;top:calc(6px + env(safe-area-inset-top));right:calc(8px + env(safe-area-inset-right));z-index:20;flex-direction:column;align-items:flex-end;flex-wrap:nowrap;gap:5px}
+    .btns button{padding:5px 10px;font-size:15px;background:#10192acc;border-radius:9px;display:none}
+    .btns button.mb,.btns.open button{display:block}
+    .btns.open .lbl{display:inline;font-size:13px}.btns button .ic{margin:0 6px 0 0}.btns button.mb{margin:0;order:-1}
+    .btns.open button{text-align:left;min-width:120px}
+    body:not([data-mode=play]) .hud{display:none}
+    .gamebox{border:0;border-radius:0;box-shadow:none;width:min(100vw,calc(100vh*16/9));width:min(100vw,calc(100dvh*16/9))}
+    .hud{position:absolute;left:6px;top:6px;right:auto;padding:3px 9px;border-radius:9px;background:#0b1424b0;font-size:11px;gap:10px;flex-wrap:nowrap;pointer-events:none;width:auto}
+    .hud .x{display:none}
+    .controls{margin:0;display:block}
+    #namebox .card{padding:10px 14px;width:min(94%,440px)}
+    #namebox h2{font-size:16px;margin-bottom:2px}#namebox p{font-size:11px;margin-bottom:6px}
+    #namebox input{font-size:15px;padding:5px;margin-bottom:6px}#dressRow{margin-bottom:8px;gap:4px}#dressRow .sw{width:24px;height:24px}
+    #namebox button{font-size:14px;padding:6px 16px}
+  }
+  @media (pointer:coarse) and (orientation:portrait) {
+    #rotate{display:flex;position:fixed;inset:0;z-index:50;background:#0a1220;align-items:center;justify-content:center;text-align:center;color:#f4f6ff;font-size:18px;padding:30px}
+    #rotate .ico{font-size:64px;margin-bottom:10px}
+  }
   #namebox{position:absolute;inset:0;display:grid;place-items:center;background:#060c18b3;z-index:5}
   #namebox[hidden]{display:none}
   #namebox .card{background:#18263af2;border:2px solid var(--line);border-radius:16px;padding:22px 26px;width:min(92%,420px);text-align:center;box-shadow:0 12px 40px #000a}
@@ -48,33 +85,30 @@
 <body>
 <div class="wrap">
   <header>
-    <div><h1>SOUND OF THE MOUNTAIN</h1><div class="tag">Mira und der Klang des stummen Berges</div></div>
-    <div class="btns"><button id="sound">🔊 Ton</button><button id="music">🎵 Musik</button><button id="voice">🤐 Stimme</button><button id="mapbtn">🗺️ Karte</button><button id="cutbtn">🎬 Cutscenes</button><button id="restart">Neustart ↻</button></div>
+    <div class="ttl"><h1>SOUND OF THE MOUNTAIN</h1><div class="tag" data-t="Mira und der Klang des stummen Berges">Mira und der Klang des stummen Berges</div></div>
+    <div class="btns"><button id="sound"></button><button id="music"></button><button id="voice"></button><button id="mapbtn"></button><button id="cutbtn"></button><button id="restart"></button><button id="pausebtn"></button><button id="langbtn"></button><button id="menubtn" class="mb">☰</button><button id="fsbtn" hidden></button></div>
   </header>
   <div class="gamebox">
-    <div id="namebox" hidden><div class="card"><h2>Wie heißt du?</h2><p>Gib deiner Figur einen Namen. Er erscheint in den Geschichten. Leer lassen: Mira.</p><input id="nameIn" maxlength="14" placeholder="Mira" autocomplete="off" autocapitalize="words" spellcheck="false"><p class="sub">Farbe des Kleides</p><div id="dressRow"></div><button id="nameGo">Los geht's ▸</button></div></div>
-    <canvas id="game" width="960" height="540" aria-label="Sound of the Mountain – Platformer-Spiel"></canvas>
+    <div id="namebox" hidden><div class="card"><h2 data-t="Wie heißt du?">Wie heißt du?</h2><p data-t="Gib deiner Figur einen Namen. Er erscheint in den Geschichten. Leer lassen: Mira.">Gib deiner Figur einen Namen. Er erscheint in den Geschichten. Leer lassen: Mira.</p><input id="nameIn" maxlength="14" placeholder="Mira" autocomplete="off" autocapitalize="words" spellcheck="false"><p class="sub" data-t="Farbe des Kleides">Farbe des Kleides</p><div id="dressRow"></div><button id="nameGo" data-t="Los geht's ▸">Los geht's ▸</button></div></div>
+    <canvas id="game" width="960" height="540" aria-label="Sound of the Mountain"></canvas>
     <div class="hud">
-      <span>⛰️ Level: <strong id="lvl">Titel</strong></span>
+      <span><span data-t="⛰️ Level:">⛰️ Level:</span> <strong id="lvl">Titel</strong></span>
       <span><span id="collL">🍓 Beeren</span>: <strong id="coll">0 / 3</strong></span>
-      <span>💨 Dash: <strong id="dash">–</strong></span>
-      <span>🚩 Checkpoint: <strong id="checkpoint">–</strong></span>
-      <span>↻ Stürze: <strong id="deaths">0</strong></span>
-      <span id="status">Klicke auf „Neues Spiel“.</span>
+      <span><span data-t="💨 Dash:">💨 Dash:</span> <strong id="dash">–</strong></span>
+      <span class="x"><span data-t="🚩 Checkpoint:">🚩 Checkpoint:</span> <strong id="checkpoint">–</strong></span>
+      <span class="x"><span data-t="↻ Stürze:">↻ Stürze:</span> <strong id="deaths">0</strong></span>
+      <span id="status" class="x" data-t="Klicke auf „Neues Spiel“.">Klicke auf „Neues Spiel“.</span>
     </div>
   </div>
   <div class="controls">
-    <div class="keys">
-      <strong>Steuerung</strong><br>
-      A / D oder ← / → bewegen · Leertaste / W / ↑ springen (an Wänden: Wandsprung)<br>
-      Shift / X dashen (8 Richtungen) · Esc Pause · R Neustart · K Karte · M Ton an/aus
-    </div>
-    <div class="touch">
-      <button data-key="ArrowLeft">◀</button><button data-key="ArrowRight">▶</button>
-      <button data-key="Space">⬆</button><button data-key="Shift">✦</button>
-    </div>
+    <div class="keys" data-t="KEYS"></div>
   </div>
-  <div class="note">Tipp: Kurz nach dem Verlassen einer Kante kannst du noch springen. Der Dash lädt sich am Boden oder an einer Wand wieder auf. Brüchige Plattformen fallen kurz nach dem Betreten, Federn schleudern dich hoch, Kristalle laden den Dash in der Luft auf, Aufwind trägt dich nach oben. In Welt 3 erscheinen Plattformen im Takt der Musik. Ab Welt 5 führen die Wege auch nach oben und von rechts nach links, und in der letzten Welt folgen dir Schatten. Wer in einem Level mehr als 20 Mal stürzt, sieht das Game Over und beginnt das Level neu. Die Sprachausgabe nutzt die deutsche Stimme deines Browsers und lässt sich mit „Stimme“ abschalten. Dein Fortschritt wird automatisch gespeichert.</div>
+  <div class="touch" id="touch">
+    <div class="pad pl"><button data-key="ArrowLeft">◀</button><button data-key="ArrowRight">▶</button><button data-key="ArrowDown" class="sm">▼</button></div>
+    <div class="pad pr"><button data-key="Shift" class="dash">✦</button><button data-key="Space" class="jump">⬆</button></div>
+  </div>
+  <div id="rotate"><div><div class="ico">📱↻</div><p data-t="Bitte halte dein Gerät quer.">Bitte halte dein Gerät quer.</p></div></div>
+  <div class="note" data-t="NOTE"></div>
 </div>
 <script>
 (()=>{
@@ -298,6 +332,1076 @@ function step(S,L,inp,dt,emit){
     else{S.win=true;emit('win',g[0],g[1]);}
   }else S.gm=0;
 }
+
+/* ===== Sprachen: Deutsch (Original) / English ===== */
+let LANG=(()=>{try{const v=localStorage.getItem('sotm_lang');if(v==='de'||v==='en')return v;}catch(e){}try{return /^de/i.test(navigator.language||'de')?'de':'en';}catch(e){return 'de';}})();
+const EN={};
+const tr=s=>(LANG==='en'&&typeof s==='string'&&EN[s]!==undefined)?EN[s]:s;
+const tf=(s,o)=>{let r=tr(s);if(o)for(const k in o)r=r.split('{'+k+'}').join(o[k]);return r;};
+
+/* UI-Texte EN */
+Object.assign(EN,{
+'Mira und der Klang des stummen Berges':'Mira and the Sound of the Silent Mountain',
+'Klicken oder Enter drücken · Mit Ton spielen':'Click or press Enter · Best played with sound',
+'Weiter ▸':'Continue ▸','Zum Berg':'To the mountain','Frühling in Nebelhain':'Spring in Nebelhain',
+'Wähle einen Ort':'Choose a place','Dann kannst du eine der Welten auswählen.':'Then you can pick one of its worlds.',
+'Klangsplitter':'Shards of sound','Geschafft – tippen zum Wiederholen':'Done – tap to replay','Tippen zum Starten':'Tap to start',
+'Gesperrt – schaffe zuerst das Level davor':'Locked – beat the previous level first','Schwierigkeit':'Difficulty',
+'Tippe auf ein leuchtendes Level, um es zu starten  ·  Enter: nächstes Level':'Tap a glowing level to start it  ·  Enter: next level',
+'Klick / Leertaste: weiter':'Click / Space: next','Überspringen ▸▸':'Skip ▸▸',
+'Die Glocke ist zerbrochen.':'The bell has shattered.','Mehr als 20 Stürze in diesem Level. Du beginnst es noch einmal von vorn.':'More than 20 falls in this level. You will start it again from the beginning.',
+'Level von vorn ▸':'Restart level ▸','Zur Karte':'To the map',
+'Achtung: Noch {n} Stürze bis Game Over!':'Careful: {n} more falls until Game Over!','Nochmal! Versuch es weiter.':'Again! Keep trying.',
+'{c} eingesammelt!':'{c} collected!','Checkpoint aktiviert!':'Checkpoint activated!','Das Tor bleibt zu: Sammle zuerst alle {c}!':'The gate stays shut: collect all {c} first!',
+'Weltkarte':'World map','Fortschritt':'Progress','Wähle ein Level.':'Choose a level.','Der Aufstieg':'The Ascent','Der Sturz':'The Fall',
+'Sammle alle {c}, dann öffnet sich das Tor!':'Collect all {c}, then the gate opens!','Etwas folgt dir … lauf!':'Something is following you … run!','Erreiche das Ziel!':'Reach the goal!',
+'Die Wüste gehört dir':'The desert is yours','Danke fürs Spielen – alle Level kannst du jederzeit erneut besuchen.':'Thanks for playing – you can revisit any level at any time.',
+'Der Schnee ist geschmolzen …':'The snow has melted …','Neue Welt: {w}':'New world: {w}',
+'Game Over – die Glocke ist zerbrochen.':'Game Over – the bell has shattered.','Neuer Versuch – von vorn!':'New attempt – from the start!',
+'Weiter':'Continue','Neues Spiel':'New Game','Nochmal klicken: Fortschritt wird gelöscht.':'Click again: progress will be deleted.','Titel':'Title',
+'Der Anfang':'The Beginning','Ankunft in Laubenau':'Arrival in Laubenau','Die Reise':'The Journey','Der Frühling':'Spring','Das Ende im Nebelhain':'The End in Nebelhain',
+'Die Bruchstelle':'The Breaking Point','Der Sturz (Szene)':'The Fall (scene)','Das Erwachen in der Tiefe':'Awakening in the Deep','Das Ende der Tiefe':'The End of the Deep',
+'Ankunft im Wolkenreich':'Arrival in the Cloud Realm','Gerettet in der Wüste':'Rescued in the Desert','Das große Finale':'The Grand Finale',
+'Ansehen':'Watch','Der Sturz in die Tiefe (Animation)':'The Fall into the Deep (animation)','Der Aufstieg (Animation)':'The Ascent (animation)','Der Sturz aus den Wolken (Animation)':'The Fall from the Clouds (animation)',
+'Anfang':'Start','Ende':'End','Besondere Szenen':'Special scenes','Hier gibt es noch nichts zu sehen. Spiele die Level, um ihre Szenen freizuschalten.':'Nothing to see here yet. Play the levels to unlock their scenes.',
+'← Zurück zur Karte':'← Back to the map','Diese Welt ist noch gesperrt.':'This world is still locked.','Dieses Dorf kennst du noch nicht.':'You don’t know this village yet.',
+'Dieser Ort ist noch verborgen.':'This place is still hidden.','Diese Wüste ist noch verborgen.':'This desert is still hidden.','Gesperrt: Schaffe zuerst das Level davor.':'Locked: beat the previous level first.',
+'Level neu gestartet.':'Level restarted.','Klick: überspringen':'Click: skip','Geschafft!':'Done!','Esc: weiter  ·  R: Neustart  ·  K: Karte':'Esc: resume  ·  R: restart  ·  K: map',
+'Ton':'Sound','Musik':'Music','Stimme':'Voice','Karte':'Map','Neustart':'Restart','Vollbild':'Fullscreen',
+'⛰️ Level:':'⛰️ Level:','↻ Stürze:':'↻ Falls:','Klicke auf „Neues Spiel“.':'Click “New Game”.',
+'Wie heißt du?':'What’s your name?','Gib deiner Figur einen Namen. Er erscheint in den Geschichten. Leer lassen: Mira.':'Give your character a name. It appears in the stories. Leave empty: Mira.',
+'Farbe des Kleides':'Dress color','Los geht\'s ▸':'Let’s go ▸','Bitte halte dein Gerät quer.':'Please hold your device in landscape.',
+'Berg':'Mountain','Herz':'Heart','Wald':'Forest','Tal':'Valley','Fall':'Fall','Wasser':'Water','Stille':'Silence','Wolken':'Clouds','Sturm':'Storm','Dünen':'Dunes','Oase':'Oasis','bereit':'ready','leer':'empty','Tippen zum Starten · Mit Ton spielen':'Tap to start · Best played with sound','Der Pfeifer':'The Piper','Eine ferne Stimme':'A distant voice'
+});
+
+/* Daten EN (generiert) */
+Object.assign(EN,{
+"Nebelhain, mitten im Winter. Seit dem ersten Frost liegt das Dorf in tiefer Stille.": "Nebelhain, in the middle of winter. Since the first frost the village has lain in deep silence.",
+"Seit Menschengedenken tönte der Bergklang von der Sternenglocke herab, das Lied des Berges. Nun ist er verstummt.": "For as long as anyone can remember, the Mountain’s Song rang down from the Star Bell, the song of the mountain. Now it has fallen silent.",
+"Kein Vogel, kein Bach, nicht einmal der Wind. Als hielte die ganze Welt den Atem an.": "No bird, no brook, not even the wind. As if the whole world were holding its breath.",
+"Die Erwachsenen warten ab. Ich nicht. Eldrin, der alte Weise, weiß bestimmt Rat.": "The grown-ups are waiting it out. I’m not. Eldrin, the old sage, will surely know what to do.",
+"Er wohnt in der Hütte am Waldrand. Also los!": "He lives in the cabin at the edge of the forest. Let’s go!",
+"Eldrin? Hallo? ... Niemand da. Aber im Kamin glimmt noch Glut.": "Eldrin? Hello? ... Nobody here. But the embers in the fireplace are still glowing.",
+"Was liegt denn da auf dem Tisch? Eine Notiz.": "What’s that on the table? A note.",
+"„Bin zur oberen Hütte am Grat aufgebrochen. Der Berg ruft nach mir. – E.“": "“Gone to the upper cabin on the ridge. The mountain is calling me. – E.”",
+"Der Grat ... das klingt nach Kletterei. Gut, dass ich Übung habe.": "The ridge ... that sounds like climbing. Good thing I’ve had practice.",
+"Hinter der Hütte beginnt ein schmaler Pfad hinauf zum Grat. Er ist steiler, als er aussieht.": "Behind the cabin a narrow path begins, leading up to the ridge. It is steeper than it looks.",
+"Zum Glück habe ich ein paar Tricks auf Lager: Dash und Wandsprung.": "Luckily I have a few tricks up my sleeve: dash and wall jump.",
+"Mira! Ich habe dich erwartet. Du hörst sie auch, nicht wahr? Die Stille.": "Mira! I was expecting you. You hear it too, don’t you? The silence.",
+"Ich höre nur, was fehlt. Eldrin, was ist mit dem Bergklang geschehen?": "I only hear what’s missing. Eldrin, what happened to the Mountain’s Song?",
+"Die Sternenglocke auf dem Gipfel ist zersprungen. Ihr Klöppel brach in sieben Klangsplitter, und der Berg hat sie verschluckt.": "The Star Bell on the summit has cracked. Its clapper broke into seven shards of sound, and the mountain swallowed them.",
+"Ohne den Klang schweigt der Berg. Und ohne den Berg kehrt der Frühling nie zurück.": "Without the sound, the mountain stays silent. And without the mountain, spring will never return.",
+"Aber warum ich? Ich bin die jüngste Glöcknerin im Dorf.": "But why me? I’m the youngest bell-ringer in the village.",
+"Weil du zuhörst. Wer den Berg hören kann, den hört auch der Berg. Nimm diesen Schal. Er trägt den Wind.": "Because you listen. Whoever can hear the mountain is heard by the mountain. Take this scarf. It carries the wind.",
+"Er summt ja ganz leise!": "It’s humming ever so softly!",
+"Das ist der erste Ton. Finde die sieben Klangsplitter, steig zum Gipfel und läute die Glocke wieder.": "That is the first tone. Find the seven shards of sound, climb to the summit and ring the bell again.",
+"Ich bringe den Klang zurück. Versprochen.": "I’ll bring the sound back. I promise.",
+"Am Fuß des Berges stehen die Tannen so still wie Wachsoldaten.": "At the foot of the mountain the fir trees stand as still as sentries.",
+"Kein Rauschen in den Zweigen. Der Berg hält wirklich den Atem an.": "Not a rustle in the branches. The mountain really is holding its breath.",
+"Zwischen zwei Wurzeln glimmt etwas: ein Glassplitter, kaum größer als ein Daumen.": "Between two roots something glimmers: a splinter of glass, barely larger than a thumb.",
+"Der erste Klangsplitter! Er singt ganz leise, ein Ton so rein wie Eis.": "The first shard of sound! It sings very softly, a tone as pure as ice.",
+"Sechs weitere fehlen noch.": "Six more are still missing.",
+"Hinter dem Wald öffnet sich ein Tal aus blauem Eis.": "Beyond the forest a valley of blue ice opens up.",
+"Hier hat die Kälte ihr Lager aufgeschlagen. Und irgendwo unter dem Eis klirrt etwas.": "The cold has made its camp here. And somewhere beneath the ice, something is tinkling.",
+"Der zweite Splitter! Er klingt höher als der erste.": "The second shard! It sounds higher than the first.",
+"Unter Miras Füßen knackt das Eis. Als würde der Berg antworten.": "The ice creaks beneath Mira’s feet. As if the mountain were answering.",
+"Im Inneren des Berges liegen Höhlen, in denen jeder Schritt doppelt klingt.": "Deep inside the mountain lie caves where every step echoes twice.",
+"Mein Echo ist das erste Geräusch seit Wochen. Ich höre mir fast gern zu.": "My echo is the first sound I’ve heard in weeks. I almost enjoy listening to myself.",
+"Der Boden ist brüchig. Zum Glück gibt es alte Messingfedern, die einen hoch hinaus tragen.": "The ground is crumbly. Luckily there are old brass springs that carry you high up.",
+"Splitter Nummer drei. Mit jedem Fund wird der Berg ein kleines bisschen lebendiger.": "Shard number three. With every find the mountain comes a little more to life.",
+"Hinter den Höhlen funkelt ein Hain aus singenden Kristallen.": "Beyond the caves a grove of singing crystals sparkles.",
+"Wenn ich einen berühre, lädt sich mein Dash sofort wieder auf!": "When I touch one, my dash recharges immediately!",
+"Vier Splitter. Mein Schal summt schon in zwei Stimmen.": "Four shards. My scarf is already humming in two voices.",
+"Der Sturmkamm ist kein Weg, sondern eine Mutprobe. Der Wind reißt an jedem Stein.": "The Storm Ridge is not a path but a test of courage. The wind tears at every stone.",
+"Festhalten, Schal!": "Hold on tight, scarf!",
+"Splitter fünf! Hört ihr das? Das ist fast schon eine Melodie.": "Shard five! Do you hear that? That’s almost a melody.",
+"Es wird Nacht. Die Wand vor Mira ragt bis in die Sterne.": "Night is falling. The wall in front of Mira reaches up to the stars.",
+"Nicht nach unten sehen. Nicht nach unten sehen ...": "Don’t look down. Don’t look down ...",
+"Tief unter ihr liegt Nebelhain, ein winziges Licht im Schnee.": "Far below her lies Nebelhain, a tiny light in the snow.",
+"Sechs Splitter. Fast geschafft. Aber was ist das für ein Rauschen am Himmel?": "Six shards. Almost there. But what is that rushing in the sky?",
+"Auf dem Gipfel hängt die Glocke, still, aber nicht tot.": "On the summit hangs the bell, silent, but not dead.",
+"Noch ein Splitter, und der Klöppel ist wieder ganz.": "One more shard, and the clapper is whole again.",
+"Der siebte Splitter. Sieben Töne für sieben Tage, für ein ganzes Lied.": "The seventh shard. Seven tones for seven days, for a whole song.",
+"Mira setzt den Klöppel zusammen und schlägt an.": "Mira puts the clapper together and strikes the bell.",
+"Ein heller Klang rollt über alle Täler. Der Schnee beginnt zu schmelzen.": "A bright sound rolls across all the valleys. The snow begins to melt.",
+"Der Bergklang! Er ist zurück! ... Aber warum klingt er so einsam?": "The Mountain’s Song! It’s back! ... But why does it sound so lonely?",
+"Aus dem Himmel antwortet eine zweite, tiefere Stimme. Die Wolken öffnen sich zu einem schimmernden Portal.": "A second, deeper voice answers from the sky. The clouds open into a shimmering portal.",
+"Läute weiter, Glöcknerin! Die Winde haben ihre Melodie verloren. Ohne sie bleibt der Berg ein halbes Lied.": "Keep ringing, bell-ringer! The winds have lost their melody. Without it the mountain stays half a song.",
+"Ein Windgeist? Dann springe ich!": "A wind spirit? Then I’ll jump!",
+"Willkommen in Aerien! Ich bin Zephyr. Seit die Windharfen verstummt sind, wehen die Böen ohne Takt.": "Welcome to Aerien! I am Zephyr. Since the wind harps fell silent, the gusts blow without rhythm.",
+"Und wie kann ich helfen?": "And how can I help?",
+"Sammle die Windnoten. Erst wenn alle drei klingen, öffnet sich das Tor zur nächsten Insel.": "Collect the wind notes. Only when all three ring out will the gate to the next island open.",
+"Die erste Harfe summt wieder! Hörst du?": "The first harp is humming again! Do you hear it?",
+"Nur ein Ton. Aber ein guter Anfang.": "Just one tone. But a good start.",
+"Die Brücken hier sind nur Wolken. Sie wandern, wie sie wollen. Timing ist alles.": "The bridges here are only clouds. They drift wherever they please. Timing is everything.",
+"Zwei Harfen! Der Wind klingt schon fast wie ein Seufzer.": "Two harps! The wind already sounds almost like a sigh.",
+"Riesige Harfen hängen zwischen den Inseln, ihre Saiten glänzen im Licht.": "Giant harps hang between the islands, their strings gleaming in the light.",
+"Spring von Saite zu Saite, aber gib acht auf die Böen!": "Jump from string to string, but watch out for the gusts!",
+"Drei Harfen singen! Der Wind beginnt, einander zuzuhören.": "Three harps are singing! The wind is starting to listen to itself.",
+"Im Sturmauge dreht sich alles. Aufwind trägt dich, Gegenwind bremst dich.": "Everything spins in the eye of the storm. Updrafts carry you, headwinds slow you down.",
+"Ich fliege! ... Fast.": "I’m flying! ... Almost.",
+"Vier Noten! Mir ist ganz schwindelig, aber es klingt wunderbar.": "Four notes! I’m quite dizzy, but it sounds wonderful.",
+"Schwarze Wolken türmen sich auf. Der Donner rollt wie eine große Pauke.": "Black clouds pile up. The thunder rolls like a great drum.",
+"Der Sturm schlägt den Takt, wenn sonst niemand es tut.": "The storm keeps the beat when nobody else does.",
+"Die Wolken lichten sich. Der Donner klingt jetzt fast wie ein Trommelwirbel zum Fest.": "The clouds are clearing. The thunder now sounds almost like a drum roll for a festival.",
+"Hohe Windschächte ragen wie Orgelpfeifen in den Himmel.": "Tall wind shafts rise into the sky like organ pipes.",
+"Jede Pfeife trägt einen Ton. Steig auf, dann spielst du ihre Melodie.": "Each pipe carries one note. Climb up and you’ll play its melody.",
+"Die Orgel ist gestimmt! Nur das Windtor fehlt noch.": "The organ is tuned! Only the wind gate is missing now.",
+"Das Windtor ist verschlossen. Nur wer alle Noten trägt, darf hindurch.": "The wind gate is locked. Only those who carry all the notes may pass.",
+"Dann zeig ich dir, was ich in zwei Welten gelernt habe.": "Then I’ll show you what I’ve learned in two worlds.",
+"Mira setzt die Windnoten in die Windkrone. Die Harfen erwachen, ein Akkord fliegt über alle Inseln.": "Mira sets the wind notes into the wind crown. The harps awaken, a chord flies across all the islands.",
+"Die Winde sind wieder geordnet. Hörst du sie singen? Das ist dein Verdienst, Glöcknerin.": "The winds are in order again. Do you hear them singing? That is your doing, bell-ringer.",
+"Und der Bergklang? Er klingt immer noch nicht ganz.": "And the Mountain’s Song? It still doesn’t sound quite right.",
+"Weil sein Herz noch schweigt. Tief unter dem Berg schlägt es nicht mehr im Takt.": "Because its heart is still silent. Deep beneath the mountain it no longer beats in time.",
+"Unter den Wolken öffnet sich ein Riss. Ein warmer, dunkler Puls steigt herauf.": "A crack opens beneath the clouds. A warm, dark pulse rises from below.",
+"Das Herz des Berges ... Dann geht es jetzt nach unten.": "The heart of the mountain ... Then it’s down we go.",
+"Ich bin Echo, der Geist dieser Tiefen. Seit das Herz aus dem Takt geraten ist, wankt auch mein Gestein.": "I am Echo, the spirit of these depths. Since the heart fell out of rhythm, my very stones are shaking.",
+"Was muss ich tun?": "What do I have to do?",
+"Folge dem Takt. Plattformen erscheinen im Rhythmus und verschwinden wieder. Hör genau hin.": "Follow the beat. Platforms appear in rhythm and vanish again. Listen closely.",
+"Gut gelaufen! Spürst du den Puls?": "Well run! Do you feel the pulse?",
+"Ich spüre ihn bis in die Zehenspitzen.": "I feel it down to my toes.",
+"Die Gänge pochen wie ein riesiger Herzschlag.": "The passages throb like one enormous heartbeat.",
+"Ich zähle mit. Eins, zwei ...": "I’m counting along. One, two ...",
+"Du hast den Rhythmus im Blut. Das Herz wird ruhiger.": "You have the rhythm in your blood. The heart is growing calmer.",
+"Glühende Adern ziehen sich durch das Gestein.": "Glowing veins run through the rock.",
+"Es ist heiß, aber keine Sorge: Der Berg meint es nicht böse.": "It’s hot, but don’t worry: the mountain means no harm.",
+"Mein Schal ist ganz warm. Er summt im Takt mit der Lava.": "My scarf is all warm. It hums in time with the lava.",
+"Ein See aus flüssigem Licht breitet sich vor Mira aus. Jede Welle klingt wie ein Ton.": "A lake of liquid light spreads out before Mira. Every wave sounds like a tone.",
+"Das ist der Klangsee. Hier sammelt sich alles, was der Berg je gesungen hat.": "This is the Sound Lake. Everything the mountain ever sang gathers here.",
+"Der See erinnert sich wieder an seine Lieder.": "The lake remembers its songs again.",
+"Ein Dom aus Kristall. Seine Säulen schwingen leise im Takt des Herzens.": "A cathedral of crystal. Its pillars sway softly to the beat of the heart.",
+"Das ist die schönste Kirche, die ich je gesehen habe, und sie hat nicht einmal ein Dach.": "This is the most beautiful church I’ve ever seen, and it doesn’t even have a roof.",
+"Wir sind fast da. Spürst du, wie nah es ist?": "We’re almost there. Can you feel how close it is?",
+"Wenn du den Boden hörst, hörst du das Herz. Die Kammer wirft jeden Klang zurück.": "If you listen to the ground, you hear the heart. The chamber throws every sound back.",
+"Dann klettere ich hinauf, bis ich das Echo meines Echos höre.": "Then I’ll climb up until I hear the echo of my echo.",
+"Da vorn leuchtet es. Das muss das Herz sein.": "Something is glowing up ahead. That must be the heart.",
+"Hier schlägt es. Aber sein Takt ist zerbrochen. Nur wer alle Perlen trägt, kann ihn zusammenfügen.": "Here it beats. But its rhythm is broken. Only those who carry all the pearls can put it back together.",
+"Mira legt die Resonanzperlen an das Herz des Berges. Es schlägt einmal. Zweimal. Dann im Takt.": "Mira lays the resonance pearls against the heart of the mountain. It beats once. Twice. Then in time.",
+"Hör zu, Mira. Alles, was du gesammelt hast, wird jetzt zu einem einzigen Klang.": "Listen, Mira. Everything you have gathered now becomes a single sound.",
+"Von der Tiefe bis zum Gipfel erklingt der Bergklang: Glocke, Wind und Herzschlag in einem Akkord.": "From the depths to the summit the Mountain’s Song rings out: bell, wind and heartbeat in one chord.",
+"Nebelhain, am nächsten Morgen. Das erste Mal seit Wochen steigt Rauch aus allen Schornsteinen.": "Nebelhain, the next morning. For the first time in weeks smoke rises from every chimney.",
+"Ich wusste, dass du zuhörst. Das ganze Dorf läutet seine Glocken für dich.": "I knew you were listening. The whole village is ringing its bells for you.",
+"Der Frühling ist da ...": "Spring is here ...",
+"Der Schnee schmilzt, der Bach singt, und in Nebelhain öffnen sich alle Fenster.": "The snow melts, the brook sings, and in Nebelhain every window opens.",
+"Du bist jetzt die Hüterin des Bergklangs, Mira. Hör gut zu, solange du lebst.": "You are now the Keeper of the Mountain’s Song, Mira. Listen well, for as long as you live.",
+"Das werde ich. Jeden Tag.": "I will. Every day.",
+"Nebelhain, einige Wochen später. Der Schnee ist fort, auf den Wiesen blüht der Löwenzahn.": "Nebelhain, a few weeks later. The snow is gone, and dandelions bloom in the meadows.",
+"Hörst du das, Mira? Die Vögel streiten schon wieder um die besten Plätze. So klingt Frühling.": "Do you hear that, Mira? The birds are squabbling over the best spots again. That’s what spring sounds like.",
+"Ich habe nie etwas Schöneres gehört.": "I have never heard anything lovelier.",
+"Da trägt der Wind eine dünne, fremde Melodie über die Dächer. Eine Flöte, weit, weit entfernt.": "Then the wind carries a thin, strange melody over the rooftops. A flute, far, far away.",
+"Glöcknerin, hörst du mich? Ich bin Hanna, die Wirtin von Laubenau, hinter den sieben Hügeln.": "Bell-ringer, can you hear me? I’m Hanna, the innkeeper of Laubenau, beyond the seven hills.",
+"Seit drei Nächten spielt jemand im Wald eine Flöte. Und jeden Morgen fehlen ein paar Kinder mehr.": "For three nights someone has been playing a flute in the forest. And every morning a few more children are missing.",
+"Unsere Glocken läuten, aber niemand hört mehr hin. Nur du hörst zu. Bitte komm.": "Our bells ring, but nobody listens anymore. Only you listen. Please come.",
+"Kinder? Im Wald? Ich komme!": "Children? In the forest? I’m coming!",
+"Wer einem Lied folgt, sollte wissen, wer es singt. Geh, Mira, und hör zu. Genau zu.": "Whoever follows a song should know who is singing it. Go, Mira, and listen. Really listen.",
+"Das habe ich vom besten Lehrer gelernt.": "I learned that from the best teacher.",
+"Sieben Hügel und drei Tage später. Mit jedem Schritt wird das Laub röter und der Wind kühler.": "Seven hills and three days later. With every step the leaves grow redder and the wind cooler.",
+"Es raschelt überall. Das klingt fast wie Applaus.": "Everything rustles. It sounds almost like applause.",
+"Plötzlich wirbelt ein Blatt auf und bleibt vor Mira in der Luft stehen. Es hat Augen.": "Suddenly a leaf whirls up and hangs in the air in front of Mira. It has eyes.",
+"Hallo! Ich bin Pip. Ich wohne im größten Ahorn von Laubenau und kenne jeden Weg im Rauschewald.": "Hello! I’m Pip. I live in the biggest maple in Laubenau and I know every path in the Rustlewood.",
+"Hanna hat mich geschickt, um dich abzuholen. Komm, die Flöte spielt schon wieder!": "Hanna sent me to fetch you. Come on, the flute is playing again!",
+"Dann los, Pip. Zeig mir, wohin sie ruft.": "Then let’s go, Pip. Show me where it’s calling.",
+"Laubenau im Herbst. Kürbisse auf den Treppen, Laternen in den Fenstern, und kein einziges Kind auf der Straße.": "Laubenau in autumn. Pumpkins on the steps, lanterns in the windows, and not a single child in the street.",
+"Siehst du die kleinen Schuhe vor den Türen? Die Kinder sind einfach losgegangen, mitten im Spiel.": "Do you see the little shoes in front of the doors? The children just walked off, right in the middle of playing.",
+"Die Flöte ... ich höre sie auch. Sie klingt so traurig.": "The flute ... I can hear it too. It sounds so sad.",
+"Sie kommt aus dem Rauschewald. Wer immer dort spielt, er ruft. Oder er bittet.": "It comes from the Rustlewood. Whoever is playing there is calling. Or pleading.",
+"Dann hören wir genauer hin.": "Then let’s listen more closely.",
+"Am Dorfrand beginnt der Rauschewald. Die Blätter flüstern, wenn man leise genug ist.": "At the edge of the village the Rustlewood begins. The leaves whisper if you are quiet enough.",
+"Ich höre eine Melodie darin. Immer dieselben sieben Töne.": "I hear a melody in it. Always the same seven notes.",
+"Im Laub liegt ein kleiner Wollhandschuh, noch warm.": "A little woolen mitten lies in the leaves, still warm.",
+"Die Kinder waren hier! Und sie sind gerannt, nicht geschlichen.": "The children were here! And they ran, they didn’t tiptoe.",
+"Der Rauschepfad führt gegen den Wind zurück in den Wald, immer nach links.": "The Rustle Path leads back into the forest against the wind, always to the left.",
+"Wir müssen dem Klang entgegen. Nach rechts würde er leiser werden.": "We have to go toward the sound. Heading right, it would get quieter.",
+"Rückwärts zum Lied. Das gefällt mir.": "Backwards, toward the song. I like that.",
+"An einem Zweig hängt ein Zettel in Kinderschrift: „Wir folgen dem lustigen Mann.“": "A note in a child’s handwriting hangs from a twig: “We are following the funny man.”",
+"Dem lustigen Mann? Die Kinder wissen gar nicht, dass sie in Gefahr sein könnten.": "The funny man? The children have no idea they might be in danger.",
+"Unter den Wurzeln der alten Eichen liegt eine Höhle voller leuchtender Pilze. Der Weg führt nur nach oben.": "Beneath the roots of the old oaks lies a cave full of glowing mushrooms. The way only leads upward.",
+"Dann klettere ich.": "Then I’ll climb.",
+"Hörst du, wie die Pilze summen? Sie spielen die Flötenmelodie nach, nur falsch.": "Do you hear the mushrooms humming? They’re playing the flute melody, only wrong.",
+"Als hätte jemand die Töne auf dem Weg verloren.": "As if someone had lost the notes along the way.",
+"Es regnet. Die Bäche sind über die Ufer getreten, nur schmale Holzbrücken führen hinüber.": "It’s raining. The brooks have burst their banks, only narrow wooden bridges lead across.",
+"Wenn sie wackeln, bleib nicht stehen!": "If they wobble, don’t stop!",
+"Pitschnass, aber weiter.": "Soaking wet, but onward.",
+"Der Regen trommelt. Merkst du? Auch er folgt dem Takt.": "The rain drums. Notice that? It follows the beat too.",
+"Ein gewaltiger Ahorn steht mitten im Wald. Seine Äste winden sich in Kehren nach oben und oben wieder zurück.": "A mighty maple stands in the middle of the forest. Its branches wind upward in switchbacks and back again.",
+"Das ist mein Zuhause! Erst hinauf, dann oben wieder zurück, genau wie die Kinder es getan haben.": "That’s my home! Up first, then back again at the top, just like the children did.",
+"Auf dem höchsten Ast sitzt ein Eichhörnchen und pfeift die Melodie.": "On the highest branch sits a squirrel, whistling the melody.",
+"Sogar die Tiere singen sie schon.": "Even the animals are singing it already.",
+"Auf der Kuppe jagt der Herbstwind über den Hang, immer von rechts nach links.": "On the hilltop the autumn wind sweeps across the slope, always from right to left.",
+"Er trägt die Flötentöne bis ins Tal. Wer ihnen folgt, muss gegen ihn laufen.": "It carries the flute notes all the way to the valley. Whoever follows them has to run against it.",
+"Der Wind hat mir das Lied ins Ohr geblasen. Ich kann es schon fast mitsummen.": "The wind blew the song into my ear. I can almost hum along.",
+"Die Tanzende Eiche trägt jeden Herbst tausend goldene Blätter. Diesmal hängen sie still.": "Every autumn the Dancing Oak carries a thousand golden leaves. This time they hang still.",
+"Nur wenn du alle drei Herbstblätter sammelst, öffnet sich ihr Tor. Dahinter beginnt das Nebelmoor.": "Only when you collect all three autumn leaves does its gate open. Beyond it begins the Mistmoor.",
+"Das Tor schwingt auf. Dahinter liegt weißer Nebel, und aus ihm dringt ein dumpfes Pochen.": "The gate swings open. Beyond lies white fog, and a dull thudding comes from within.",
+"Trommeln? Der Flötenspieler bringt Verstärkung?": "Drums? Is the flute player bringing reinforcements?",
+"Oder er hat Angst im Dunkeln und trommelt sich Mut zu.": "Or he’s afraid of the dark and drums to give himself courage.",
+"Nebel steht wie Milch im Moor. Nur Moosinseln und schmale Stege ragen heraus.": "Fog lies like milk over the moor. Only moss islands and narrow walkways stick out.",
+"Hier verirrt man sich leicht. Aber schau, kleine Fußabdrücke im Schlamm. Die Kinder waren hier.": "It’s easy to get lost here. But look, little footprints in the mud. The children were here.",
+"Irrlichter tanzen am Wegrand. Sie wollen nur spielen, sagt Pip.": "Will-o’-the-wisps dance at the wayside. They only want to play, says Pip.",
+"Trotzdem bleibe ich auf den Stegen.": "I’ll still stay on the walkways.",
+"Im Schilf wispert es. Der Weg führt zurück durch das hohe Gras, dem Pochen entgegen.": "Something whispers in the reeds. The path leads back through the tall grass, toward the thudding.",
+"Das Schilf spielt Flöte, wenn der Wind hindurchfährt. Aber nur einen einzigen Ton.": "The reeds play flute when the wind passes through. But only a single note.",
+"Ein einziger Ton, immer wieder. Als suche jemand einen zweiten Ton, der dazu passt.": "A single note, over and over. As if someone were searching for a second note to go with it.",
+"Ein Wasserfall donnert in den Fels. Die Gischt klingt wie tausend kleine Trommelschläge.": "A waterfall thunders into the rock. The spray sounds like a thousand little drumbeats.",
+"Der Takt, den ich seit Tagen höre. Er kommt vom Wasser!": "The beat I’ve been hearing for days. It comes from the water!",
+"Aber wer hat dem Wasser den Takt beigebracht?": "But who taught the water the beat?",
+"Am Rand des Falls stecken Bronzeglöckchen im Fels. Jemand hat sie dort aufgehängt, damit der Fall singt.": "At the edge of the fall, bronze bells are stuck in the rock. Someone hung them there so the fall would sing.",
+"Hinter dem Fall führt ein Steg aus nassen Felsplatten steil bergauf. Das Wasser schlägt im Takt gegen die Steine.": "Behind the fall a walkway of wet stone slabs leads steeply uphill. The water beats against the stones in time.",
+"Ich klettere im Rhythmus des Wassers.": "I’ll climb to the rhythm of the water.",
+"Hier hat jemand mit Kreide gemalt: ein Pfeil mit Noten. Die Kinder haben sich Wegzeichen hinterlassen!": "Someone has drawn here with chalk: an arrow with notes. The children left themselves waymarks!",
+"Schlau. Dann sind sie nicht ganz ohne Verstand mitgelaufen.": "Clever. So they didn’t follow along without a thought.",
+"Auf den Gongklippen hängen Bronzescheiben in Reihen. Jeder falsche Schritt lässt eine erklingen.": "On the Gong Cliffs bronze discs hang in rows. Every wrong step makes one ring out.",
+"Der Pfad windet sich erst nach oben und dann zurück durch ganz andere Klippen.": "The path winds up first and then back through entirely different cliffs.",
+"Mein Herz schlägt im Takt der Gongs. Wir sind nah, Pip.": "My heart beats in time with the gongs. We’re close, Pip.",
+"Die Sonne sinkt. Der Grat glüht rot, und vom anderen Ende des Tals antwortet die Flöte, näher als je zuvor.": "The sun is sinking. The ridge glows red, and from the other end of the valley the flute answers, closer than ever.",
+"Im letzten Licht bewegt sich zwischen den Felsen ein Schatten, lang und dünn wie ein Mann ohne Gesicht.": "In the last light a shadow moves between the rocks, long and thin like a man without a face.",
+"Das war nicht der Wind.": "That wasn’t the wind.",
+"Das Trommelwehr staut den Fluss. Seine Schleusen schlagen im Takt, und nur wer alle Tropfen findet, öffnet das Tor.": "The Drum Weir dams the river. Its sluices beat in time, and only those who find all the drops can open the gate.",
+"Mira, hinter uns raschelt es.": "Mira, something is rustling behind us.",
+"Dann sollten wir nicht trödeln.": "Then we shouldn’t dawdle.",
+"Das Tor öffnet sich. Dahinter liegt ein Tal ohne Mond und ohne Wind. Nur die Flöte spielt noch, ganz leise.": "The gate opens. Beyond lies a valley without moon and without wind. Only the flute still plays, very softly.",
+"Das Schattental. Hier geht niemand freiwillig hinein.": "The Shadow Valley. Nobody goes in here willingly.",
+"Die Kinder schon. Also wir auch.": "The children did. So will we.",
+"Im Schattental ist es nie ganz Nacht und nie ganz Tag. Die Bäume sind kahl, die Laternen erloschen.": "In the Shadow Valley it is never quite night and never quite day. The trees are bare, the lanterns burnt out.",
+"Spürst du das? Etwas beobachtet uns.": "Do you feel that? Something is watching us.",
+"Am Wegrand steht eine Laterne, die noch brennt. Jemand hat sie für die Kinder angezündet.": "By the wayside stands a lantern that is still burning. Someone lit it for the children.",
+"Jemand, der nicht wollte, dass sie sich fürchten.": "Someone who didn’t want them to be afraid.",
+"Aus dem Dunkel lösen sich Schatten, lang und dünn wie Flötenspieler ohne Flöte. Sie folgen jedem Schritt.": "Shadows detach from the dark, long and thin like flute players without flutes. They follow every step.",
+"Lauf, Mira! Bleib nie stehen!": "Run, Mira! Never stop!",
+"Sie waren schneller, als ich dachte. Aber sie rufen nicht. Sie ... summen?": "They were faster than I thought. But they aren’t calling. They’re ... humming?",
+"Das ist die Melodie! Die Schatten sind die Melodie.": "That’s the melody! The shadows are the melody.",
+"Der Laternenweg führt erst nach rechts, dann hinauf und wieder zurück. Dicht hinter Mira bleibt der Schatten.": "The Lantern Path leads first to the right, then up and back again. The shadow stays right behind Mira.",
+"Sie halten Abstand zu den Laternen. Sie mögen kein Licht, aber sie lieben das Lied.": "They keep their distance from the lanterns. They don’t like light, but they love the song.",
+"Ein Hang aus Dornen und kahlem Fels, steil wie eine Wand. Unter Mira kriecht der Schatten nach oben.": "A slope of thorns and bare rock, steep as a wall. Beneath Mira the shadow creeps upward.",
+"Es werden mehr!": "There are more of them!",
+"Sie wollen nichts Böses. Sie sind einsam. Hörst du, wie sie flüstern? Bleib, bleib, bleib.": "They mean no harm. They are lonely. Do you hear them whispering? Stay, stay, stay.",
+"Eine morsche Brücke führt über die Schlucht, danach durch Nebel zurück zum anderen Ufer. Zwei Schatten folgen jetzt.": "A rotten bridge leads across the gorge, then back through fog to the other bank. Two shadows follow now.",
+"Zwei Schatten, und sie klingen wie zwei Stimmen, die sich nicht finden.": "Two shadows, and they sound like two voices that can’t find each other.",
+"Der Mondturm ragt aus dem Tal wie ein Finger. Im obersten Fenster brennt ein Licht, und von dort kommt die Flöte.": "The Moon Tower rises from the valley like a finger. A light burns in the topmost window, and the flute comes from there.",
+"Die Kinder sind dort oben. Ich spüre es.": "The children are up there. I can feel it.",
+"Oben im Turm führt eine Tür in eine riesige Halle. Von drinnen klingt Gelächter. Kinderlachen.": "At the top of the tower a door leads into an enormous hall. Laughter sounds from inside. Children’s laughter.",
+"Sie lachen! Es geht ihnen gut!": "They’re laughing! They’re all right!",
+"Die Flötenhalle. Hunderte Laternen hängen unter der Decke, und in der Mitte steht eine Gestalt im langen Mantel. Drei Schatten sind noch hinter Mira her.": "The Flute Hall. Hundreds of lanterns hang beneath the ceiling, and in the middle stands a figure in a long coat. Three shadows are still chasing Mira.",
+"Ich sammle die Laternen. Erst dann hört mir jemand zu.": "I’ll collect the lanterns. Only then will anyone listen to me.",
+"Mira öffnet das Tor. Die Schatten bleiben stehen. Sie verneigen sich vor der Gestalt im Mantel und werden still.": "Mira opens the gate. The shadows stop. They bow to the figure in the coat and fall quiet.",
+"Du bist weit gekommen, kleine Glöcknerin. Weiter als alle.": "You have come far, little bell-ringer. Further than anyone.",
+"Du bist der Flötenspieler. Warum hast du die Kinder hierher gelockt?": "You are the flute player. Why did you lure the children here?",
+"Ich wollte nur, dass jemand zuhört. Ich spiele seit hundert Herbsten auf dem Mondturm. Das Dorf hat mich nie gehört.": "I only wanted someone to listen. I have been playing on the Moon Tower for a hundred autumns. The village never heard me.",
+"Die Kinder sind stehen geblieben. Sie haben mir zugehört, zum ersten Mal. Ich wollte nicht, dass sie wieder gehen.": "The children stopped. They listened to me, for the first time. I didn’t want them to leave again.",
+"Dein Lied ist wunderschön. Aber ein Lied gehört nicht eingesperrt. Es gehört geteilt.": "Your song is beautiful. But a song doesn’t belong locked away. It belongs shared.",
+"Mira hört die ganze Melodie bis zum letzten Ton. Als sie zu Ende ist, leuchten alle Laternen zugleich.": "Mira listens to the whole melody to the very last note. When it ends, all the lanterns light up at once.",
+"Niemand hat je bis zum Ende zugehört.": "Nobody has ever listened to the end.",
+"Ich schon. Komm mit nach Laubenau. Heute Abend ist Erntefest, und wir haben noch keine Musik.": "I did. Come with me to Laubenau. Tonight is the harvest festival, and we still have no music.",
+"Laubenau, am Abend des Erntefests. Die Kinder sind zurück und erzählen alle gleichzeitig.": "Laubenau, on the evening of the harvest festival. The children are back and are all talking at once.",
+"Und der Pfeifer spielt! Hörst du? Das ganze Dorf klatscht im Takt!": "And the Piper is playing! Do you hear? The whole village is clapping in time!",
+"Er spielt nicht mehr allein. Seht ihr? Zuhören ist die schönste Musik.": "He no longer plays alone. See? Listening is the most beautiful music.",
+"Auf dem Dorfplatz tanzen Kinder, Schatten und Laubgeister durcheinander. Die Flöte spielt ein Lied, das niemand mehr vergisst.": "On the village square children, shadows and leaf spirits dance all mixed together. The flute plays a song nobody will ever forget.",
+"Kommst du wieder, Mira?": "Will you come back, Mira?",
+"Wenn ihr ruft. Nebelhain und Laubenau sind jetzt Nachbarn. Und Nachbarn hören einander zu.": "Whenever you call. Nebelhain and Laubenau are neighbors now. And neighbors listen to each other.",
+"Ende. Fürs Erste.": "The end. For now.",
+"Die Dunkelheit ist nicht leer. Sie ist dicht, kühl und lauscht. Weit oben schimmert noch ein Fleck Himmel, dann ist auch er fort.": "The darkness is not empty. It is dense, cool and listening. Far above, a patch of sky still glimmers, then even that is gone.",
+"Pip? ... Niemand antwortet. Dann gehe ich eben allein. Immer der Nase nach, immer abwärts.": "Pip? ... Nobody answers. Then I’ll just go alone. Following my nose, always downward.",
+"Am Grund des Sturzes liegt ein Riss im Fels. Davor schwebt etwas Schwarzes, in sich gedreht wie ein Strudel aus Nacht.": "At the bottom of the fall there is a crack in the rock. Before it hovers something black, twisted in on itself like a whirlpool of night.",
+"Ein Tor? Es zieht an meinem Schal ... und wirkt, als wüsste es etwas, das ich nicht weiß.": "A gate? It tugs at my scarf ... and seems to know something I don’t.",
+"Schwarze Tore stehen im Gang. Wer hindurchtritt, kommt an einem anderen Ort wieder heraus.": "Black gates stand in the passage. Whoever steps through comes out again somewhere else.",
+"Ich merke mir, wo ich hineingehe. Wer sich verläuft, muss nur genauer hinsehen.": "I’ll remember where I go in. Anyone who gets lost just has to look more closely.",
+"Zwei Tore führten im Kreis, eines weiter. Ich lerne die Dunkelheit zu lesen.": "Two gates led in circles, one led onward. I’m learning to read the darkness.",
+"Ein Gewölbe voller Kristalle. Sie leuchten schwach und singen kaum hörbar, als erinnerten sie sich an ein Licht, das längst erloschen ist.": "A vault full of crystals. They glow faintly and sing barely audibly, as if remembering a light that went out long ago.",
+"Das Licht kam nie von draußen. Es steckt in den Steinen selbst. Man muss es nur anhören.": "The light never came from outside. It lives in the stones themselves. You just have to listen to it.",
+"Der Boden bricht weg. Ein Absatz folgt dem nächsten, Stufe um Stufe hinab, und keiner weiß, wie tief es geht.": "The ground gives way. One ledge follows the next, step by step downward, and nobody knows how deep it goes.",
+"Nur nicht zurückschauen. Es geht ohnehin nur in eine Richtung.": "Just don’t look back. There is only one direction anyway.",
+"Mira landet weich, auf Moos, das im Dunkeln leuchtet. Zum ersten Mal seit dem Sturz atmet sie tief durch.": "Mira lands softly, on moss that glows in the dark. For the first time since the fall she takes a deep breath.",
+"Tor um Tor, und keines führt dorthin, wo man es vermutet. Manche bringen dich zurück, manche weiter hinaus.": "Gate after gate, and none leads where you expect. Some bring you back, some further out.",
+"Ein Labyrinth aus Türen. Ich folge dem Gefühl, nicht den Augen.": "A labyrinth of doors. I follow my feeling, not my eyes.",
+"Das richtige Tor sah genauso aus wie die falschen. Nur ich wusste, dass es das richtige war.": "The right gate looked exactly like the wrong ones. Only I knew it was the right one.",
+"Ein enger Schacht, tropfend und kalt. Irgendwo weit unten rauscht Wasser.": "A narrow shaft, dripping and cold. Somewhere far below, water rushes.",
+"Es riecht nach Wasser und nach Eisen. Je tiefer ich komme, desto weniger Angst habe ich. Seltsam.": "It smells of water and iron. The deeper I go, the less afraid I am. Strange.",
+"Ein mächtiges Tor aus schwarzem Stein versperrt den Weg. Es öffnet sich nur, wenn alle Lichtfunken gesammelt sind.": "A mighty gate of black stone blocks the way. It only opens once all the light sparks are collected.",
+"Funken aus dem Dunkel. Ich sammle sie, einen nach dem anderen.": "Sparks from the dark. I collect them, one after the other.",
+"Das Tor schwingt auf. Dahinter liegt ein See, so schwarz, dass er den Himmel verschluckt.": "The gate swings open. Beyond lies a lake so black it swallows the sky.",
+"Niemand hat mir gesagt, dass ich hier sein sollte. Trotzdem bin ich hier. Und ich gehe weiter.": "Nobody told me I should be here. Yet here I am. And I’m going on.",
+"Der Schwarze See. Er spiegelt nichts, nicht einmal Mira. Nur Fähren und Stege führen über ihn.": "The Black Lake. It reflects nothing, not even Mira. Only ferries and walkways lead across.",
+"Mein Spiegelbild fehlt. Aber ich spüre, dass ich da bin, und das genügt.": "My reflection is missing. But I can feel that I’m here, and that is enough.",
+"Eine Fähre ohne Fährmann. Sie fährt allein, lautlos, in die Nebel hinaus.": "A ferry without a ferryman. It sails alone, silently, out into the mist.",
+"Wohin mich die Fähre bringt, weiß sie wohl selbst nicht.": "Where the ferry takes me, it probably doesn’t know itself.",
+"Ein fernes Licht, mehr nicht. Aber es ist das erste, das ich nicht allein tragen muss.": "A distant light, nothing more. But it is the first I don’t have to carry alone.",
+"Ein Wasserfall stürzt ins Nichts, und neben ihm führt ein Pfad hinab. Etwas Dunkles folgt Mira dicht auf den Fersen.": "A waterfall plunges into nothing, and a path leads down beside it. Something dark follows close on Mira’s heels.",
+"Ein Schatten ... nein, mehr als einer. Sie holen auf. Ich darf nicht stehen bleiben.": "A shadow ... no, more than one. They’re catching up. I mustn’t stop.",
+"Der Schatten bleibt am Ufer stehen. Sein Blick folgt Mira, ohne Hass, nur mit einer Frage.": "The shadow stays on the shore. Its gaze follows Mira, without hatred, only with a question.",
+"Gänge, Wasser, Tore. Der Berg dreht sich, wenn man ihm den Rücken kehrt.": "Passages, water, gates. The mountain turns when you turn your back on it.",
+"Hier hilft kein Plan. Hier hilft nur Aufmerksamkeit.": "No plan helps here. Only attention helps here.",
+"Ich bin durch das Labyrinth, ohne die Orientierung zu verlieren. Vielleicht habe ich sie noch nie gebraucht.": "I made it through the labyrinth without losing my bearings. Maybe I never needed them.",
+"Eine Höhle, in der Tropfsteine wie Zähne hängen. Wasser läuft an den Wänden hinab, und ein Weg führt hinauf.": "A cave where stalactites hang like teeth. Water runs down the walls, and a path leads upward.",
+"Aufwärts! Zum ersten Mal seit Langem geht es wieder aufwärts.": "Upward! For the first time in a long while it’s going up again.",
+"Ein schwarzer Kanal durchschneidet die Höhle. Zwei Schatten gleiten am Ufer entlang und folgen jedem Schritt.": "A black channel cuts through the cave. Two shadows glide along the bank and follow every step.",
+"Sie sind nicht mehr so schnell, wie sie scheinen. Oder ich bin schneller geworden.": "They’re not as fast as they seem anymore. Or I’ve become faster.",
+"Sie bleiben zurück. Ich glaube, sie wollten nur sehen, ob ich weitergehe.": "They stay behind. I think they only wanted to see whether I’d keep going.",
+"Die Schwarze Quelle. Aus ihr entspringt alles Wasser dieser Tiefe. Zwei Schatten wachen am Rand, und das Tor ist verschlossen.": "The Black Spring. All the water of this depth rises from it. Two shadows guard the edge, and the gate is locked.",
+"Ich sammle die Glut. Wärme gegen die Kälte.": "I’ll collect the embers. Warmth against the cold.",
+"Das Wasser der Quelle wird für einen Augenblick klar. Mira sieht ihr Gesicht darin, müde und entschlossen.": "For a moment the spring’s water turns clear. Mira sees her face in it, tired and determined.",
+"Da bin ich. Ich war die ganze Zeit hier.": "There I am. I was here the whole time.",
+"Hier unten ist es still. Kein Tropfen, kein Windhauch, kein Herzschlag außer ihrem eigenen. Ein einziger Schatten folgt Mira.": "It is quiet down here. Not a drop, not a breath of wind, no heartbeat but her own. A single shadow follows Mira.",
+"Die Stille ist gar nicht leer. Sie wartet darauf, dass ich etwas sage.": "The silence isn’t empty at all. It is waiting for me to say something.",
+"Ich habe nichts gesagt. Und trotzdem hat die Stille mir zugehört.": "I didn’t say anything. And still the silence listened to me.",
+"Der Weg führt wieder abwärts. Stufen aus altem Stein, und aus der Tiefe klingt ein Ton, so leise wie ein Gedanke.": "The way leads downward again. Steps of old stone, and from the depths comes a tone as soft as a thought.",
+"Der Ton wird deutlicher. Er klingt nach einer Glocke, die ich schon einmal gehört habe.": "The tone grows clearer. It sounds like a bell I’ve heard before.",
+"Schritte hallen durch den Saal, doppelt und dreifach. Zwei Schatten folgen ihrem Echo.": "Footsteps echo through the hall, doubled and tripled. Two shadows follow their echo.",
+"Welche Schritte sind meine, welche ihre? Ich zähle einfach nicht mehr mit.": "Which footsteps are mine, which are theirs? I simply stop counting.",
+"Das Echo verklingt. Was bleibt, ist ein einziger Schritt: meiner.": "The echo fades. What remains is a single step: mine.",
+"Der Spiegelgang. Hier laufen Wege rückwärts, Tore führen in sich selbst zurück, und zwei Schatten tauchen überall zugleich auf.": "The Mirror Passage. Here paths run backwards, gates lead back into themselves, and two shadows appear everywhere at once.",
+"Ich habe aufgehört, dem Spiegel zu glauben. Ich glaube dem, was ich fühle.": "I’ve stopped believing the mirror. I believe what I feel.",
+"Der tiefste Fall. Unter ihr gibt es keinen Boden mehr, nur Stufen, die sich erst zeigen, wenn man sie braucht.": "The deepest fall. Beneath her there is no ground anymore, only steps that show themselves when you need them.",
+"Ich vertraue meinen Füßen. Sie haben mich bis hierher gebracht.": "I trust my feet. They have brought me this far.",
+"Am Ende des Falls leuchtet ein winziger, goldener Punkt, genau dort, wo Mira ihn nicht erwartet hätte.": "At the end of the fall a tiny golden dot glows, exactly where Mira would not have expected it.",
+"Nun geht es hinauf, aus dem Nichts, Fels um Fels. Zwei Schatten klettern hinter ihr her, lautlos und dicht.": "Now it goes up, out of the void, rock by rock. Two shadows climb after her, silent and close.",
+"Weiter! Ich höre es jetzt. Es ist ein Lied, und es kommt von oben.": "Onward! I can hear it now. It’s a song, and it comes from above.",
+"Das Lied wird klarer. Ich kenne es. Ich habe es immer gekannt.": "The song is getting clearer. I know it. I have always known it.",
+"Die letzte Halle. Drei Schatten, ein Tor, und ganz hinten ein warmes Licht. Das Lied ist nun deutlich zu hören.": "The last hall. Three shadows, one gate, and far at the back a warm light. The song can now be heard clearly.",
+"Ich sammle die letzten Runen. Dann gehe ich hinein.": "I’ll collect the last runes. Then I’ll go in.",
+"Das Tor öffnet sich. Die Schatten verneigen sich und lösen sich in Licht auf.": "The gate opens. The shadows bow and dissolve into light.",
+"Du hast es gefunden. Das Lied, das nur du kennst.": "You found it. The song that only you know.",
+"Es war nie in der Glocke. Es war immer in mir. Und jetzt weiß ich es.": "It was never in the bell. It was always in me. And now I know it.",
+"Laubenau feiert. Doch in dieser Nacht, als die letzten Lichter erlöschen, hört Mira unter dem Dorfplatz ein Geräusch. Tief, fern und unendlich traurig.": "Laubenau is celebrating. But that night, as the last lights go out, Mira hears a sound beneath the village square. Deep, distant and infinitely sad.",
+"Pip, hörst du das? Eine Glocke ... aber verkehrt herum, wie aus der Tiefe.": "Pip, do you hear that? A bell ... but upside down, as if from the depths.",
+"Ich höre nichts, Mira. Nur den Wind.": "I don’t hear anything, Mira. Only the wind.",
+"Der Boden unter Mira beginnt zu beben.": "The ground beneath Mira begins to tremble.",
+"Als sie landet, ist es still. Kein Dorf, keine Freunde, kein Licht. Nur sie selbst und eine Glocke, die leise klingt.": "When she lands, it is silent. No village, no friends, no light. Only herself and a bell that rings softly.",
+"Diesmal hilft mir niemand. Diesmal muss ich selbst herausfinden, wohin ich gehöre.": "This time nobody helps me. This time I have to find out for myself where I belong.",
+"Über Mira öffnet sich die Dunkelheit wie ein Vorhang. Sterne, ein Wind, und ganz fern der Berg, auf dem alles begann.": "Above Mira the darkness opens like a curtain. Stars, a wind, and far away the mountain where it all began.",
+"Ich war nie verloren. Ich war nur dort, wo man sich selbst begegnet.": "I was never lost. I was only where you meet yourself.",
+"Die Glocke an ihrem Gürtel klingt zum ersten Mal ganz und rein. Da greifen Wurzeln nach Mira und tragen sie sanft nach oben.": "The bell at her belt rings whole and pure for the first time. Then roots reach for Mira and carry her gently upward.",
+"Mira durchstößt den Boden von Laubenau, sieht die Dächer, die Lichter, Pip auf dem Dorfplatz. Doch die Wurzeln lassen sie nicht los.": "Mira breaks through the ground of Laubenau, sees the rooftops, the lights, Pip on the village square. But the roots won’t let go of her.",
+"Halt! Ich will doch nach Hause ... Wir steigen immer weiter!": "Stop! I want to go home ... We keep rising!",
+"Höher und höher, durch Dunst und Wolkenschleier, bis die Welt unter ihr nur noch ein buntes Mosaik ist.": "Higher and higher, through haze and veils of cloud, until the world beneath her is only a colorful mosaic.",
+"Da bist du ja endlich, kleine Glöcknerin. Ich habe dich erwartet. Willkommen im Wolkenmeer!": "There you are at last, little bell-ringer. I have been expecting you. Welcome to the Sea of Clouds!",
+"Zephyr? Wo bin ich?": "Zephyr? Where am I?",
+"Dort, wo man den Wind lernt. Geh weiter, und du wirst sehen.": "Where one learns the wind. Walk on, and you will see.",
+"Der Boden ist weiß und weich, und er trägt nicht jeden. Wolken, die grau sind, sinken, sobald jemand auf ihnen steht.": "The ground is white and soft, and it doesn’t carry everyone. Clouds that are gray sink as soon as somebody stands on them.",
+"Willkommen im Wolkenmeer, Mira! Bleib in Bewegung, dann trägt dich jede Wolke weit genug.": "Welcome to the Sea of Clouds, Mira! Keep moving, then every cloud will carry you far enough.",
+"Weiße Wolken tragen, graue geben nach. Das merke ich mir.": "White clouds carry, gray ones give way. I’ll remember that.",
+"Ein Meer aus Wolken, so weit das Auge reicht. Von Insel zu Insel gilt es zu hüpfen.": "A sea of clouds as far as the eye can see. You have to hop from island to island.",
+"Du hüpfst wie eine Feder! Hier oben ist niemand schwer.": "You hop like a feather! Nobody is heavy up here.",
+"Ein warmer Aufwind schraubt sich in den goldenen Himmel. Graue Wolken sinken, die Luftsäulen tragen dagegen hinauf.": "A warm updraft spirals into the golden sky. Gray clouds sink, while the columns of air carry you up instead.",
+"Hinauf, immer weiter hinauf. Aber nicht stehen bleiben!": "Up, ever further up. But don’t stand still!",
+"Oben schimmert eine Wolkenkante im Abendlicht. Mira hat das Gefühl, der Himmel selbst würde sie anheben.": "Above, a cloud edge shimmers in the evening light. Mira feels as if the sky itself were lifting her.",
+"Die Wolkenfelder: weite weiße Wiesen, auf denen graue Inseln schweben und langsam in die Tiefe sinken.": "The Cloud Fields: wide white meadows where gray islands float and slowly sink into the depths.",
+"Wie Schnee, nur ohne Kälte. Hier könnte ich bleiben, wenn ich nicht weiter müsste.": "Like snow, only without the cold. I could stay here if I didn’t have to go on.",
+"Das sinkende Meer. Fast alle Wolken geben nach, sobald man verweilt. Wer zögert, versinkt im Weiß.": "The Sinking Sea. Almost all clouds give way as soon as you linger. Whoever hesitates sinks into the white.",
+"Zögern ist hier gefährlich. Nur Mut!": "Hesitating is dangerous here. Courage!",
+"Ich bin nicht versunken. Zögern ist wohl nur die Angst vor dem nächsten Schritt.": "I didn’t sink. Hesitation is probably just fear of the next step.",
+"Eine Treppe aus Wolken windet sich in die Höhe. Jede Stufe sinkt, kaum dass man sie betritt.": "A staircase of clouds winds up into the heights. Every step sinks as soon as you set foot on it.",
+"Da oben wartet das Wolkentor. Dahinter beginnt mein Reich.": "Up there waits the Cloud Gate. Behind it my realm begins.",
+"Das Wolkentor ist verschlossen. Es öffnet sich nur, wenn alle Wolkenfedern gesammelt sind.": "The Cloud Gate is locked. It only opens once all the cloud feathers are collected.",
+"Federn sammeln, Wolken überlisten. Dann gehe ich hinein.": "Collect feathers, outwit clouds. Then I’ll go in.",
+"Das Tor teilt sich wie ein Vorhang aus Dunst. Dahinter ballt sich etwas Dunkles zusammen.": "The gate parts like a curtain of haze. Behind it something dark gathers.",
+"Das ist das Sturmland. Ich begleite dich nicht weiter. Dort kann nicht einmal ich fliegen.": "This is the Stormland. I won’t go any further with you. Not even I can fly there.",
+"Der Himmel wird schwarz. Schwere Wolken hängen wie ein Deckel über dem Land, und aus der Ferne rollt der erste Donner heran.": "The sky turns black. Heavy clouds hang like a lid over the land, and from afar the first thunder rolls in.",
+"Funken, die fallen, und dann ein Schlag? Ich muss aufpassen, wo ich stehe.": "Sparks that fall, and then a strike? I have to watch where I stand.",
+"Der Blitz hat mich gesucht, aber nicht gefunden. Vorausahnen, laufen, weiter.": "The lightning looked for me but didn’t find me. Anticipate, run, keep going.",
+"Die schwarze Front schiebt sich über die Wolken wie eine Mauer. Regen peitscht, alle fünf Sekunden zuckt ein Blitz.": "The black front pushes across the clouds like a wall. Rain lashes down, and every five seconds a bolt flashes.",
+"Fünf Sekunden. Ich zähle mit, und ich komme jedes Mal davon.": "Five seconds. I count along, and I get away every time.",
+"Die Blitzgasse: eine enge Wolkenschlucht, in der jeder Schlag widerhallt. Der Weg führt nach oben.": "Lightning Alley: a narrow cloud gorge where every strike echoes. The way leads upward.",
+"Oben wird der Donner leiser, und etwas wie Respekt schwingt im Grollen mit.": "Up here the thunder grows quieter, and something like respect rings in the rumble.",
+"Das Auge des Sturms. Wo es still sein sollte, wirbeln graue Wolken um Mira, und Blitze folgen jedem Schritt.": "The eye of the storm. Where it should be calm, gray clouds whirl around Mira, and lightning follows every step.",
+"Im Auge war es nicht ruhig. Aber ich auch nicht mehr.": "It wasn’t calm in the eye. But neither was I anymore.",
+"Funkenflug. Über den Wolken glimmen Lichter, die von oben fallen und Mira verraten, wo gleich der Blitz einschlägt.": "Flying sparks. Above the clouds, lights glimmer, falling from above and telling Mira where the lightning is about to strike.",
+"Die Funken sind eine Warnung. Der Sturm will fair kämpfen.": "The sparks are a warning. The storm wants to fight fair.",
+"Er spielt nicht fair. Aber er spielt nach Regeln, und die habe ich gelernt.": "It doesn’t play fair. But it plays by rules, and I’ve learned them.",
+"Der Sturmturm ragt aus den Wolken, schwarz wie Basalt. Wer ihn besteigen will, muss Blitzen ausweichen und sinkenden Wolken davonspringen.": "The Storm Tower rises from the clouds, black as basalt. Whoever wants to climb it must dodge lightning and jump away from sinking clouds.",
+"Auf der Turmspitze steht ein Tor aus dunklem Eisen. Es summt, und die Luft knistert.": "On the tower’s peak stands a gate of dark iron. It hums, and the air crackles.",
+"Das Gewittertor. Es schließt sich erst auf, wenn alle Blitzsplitter gesammelt sind. Der Sturm tobt dabei ohne Pause.": "The Thunder Gate. It only unlocks once all the lightning shards are collected. The storm rages without pause meanwhile.",
+"Splitter sammeln, Blitzen ausweichen. Los!": "Collect shards, dodge lightning. Go!",
+"Der Sturm bricht auseinander. Zwischen den Wolken fällt ein Lichtstrahl, und dahinter weht ein freier, klarer Wind.": "The storm breaks apart. A ray of light falls between the clouds, and beyond it blows a free, clear wind.",
+"Die Windweite. Wind kommt aus jeder Richtung, mal schiebt er, mal bremst er, mal trägt er.": "The Windlands. Wind comes from every direction, sometimes pushing, sometimes braking, sometimes carrying.",
+"Gegen den Wind laufen, mit dem Wind springen. Das kann ich lernen.": "Run against the wind, jump with the wind. I can learn that.",
+"Der Wind ist kein Feind. Er will nur, dass man ihm zuhört.": "The wind is no enemy. It only wants you to listen to it.",
+"Die Windscheide, wo sich zwei Strömungen kreuzen. Eine zieht nach links, die andere nach rechts.": "The Windshear, where two currents cross. One pulls to the left, the other to the right.",
+"Zwei Winde, ein Weg. Ich muss mich nur entscheiden, welcher mich trägt.": "Two winds, one path. I only have to decide which one carries me.",
+"Der Windsprung. Die Lücken sind viel zu breit zum Springen, und doch tragen die Strömungen mutige Wanderer hinüber.": "The Wind Leap. The gaps are far too wide to jump, and yet the currents carry brave wanderers across.",
+"Von Wind zu Wind. Ich traue den Böen.": "From wind to wind. I trust the gusts.",
+"Ich bin geflogen, nur für einen Augenblick. Es hat sich angefühlt wie Heimkommen.": "I flew, just for a moment. It felt like coming home.",
+"Der Wirbel. Ein riesiger Luftstrudel dreht sich in den Himmel, und Mira steigt in ihm auf.": "The Whirl. A giant vortex of air spins into the sky, and Mira rises within it.",
+"Der Wirbel gibt Mira frei. Unter ihr dreht sich die Welt wie ein Teller.": "The whirl releases Mira. Beneath her the world turns like a plate.",
+"Gegenwinde. Hier bläst alles gegen Mira, doch zwischen den Böen liegen kurze Lücken, in denen sie vorwärtskommt.": "Headwinds. Everything here blows against Mira, but between the gusts there are short gaps in which she can make headway.",
+"Gegen den Wind zu laufen macht stark. Mit ihm zu fliegen macht frei.": "Running against the wind makes you strong. Flying with it makes you free.",
+"Der Sturmwind. Er zerrt an Schal, Haaren und Mut, und der Weg führt steil hinauf.": "The Stormwind. It tugs at scarf, hair and courage, and the way leads steeply up.",
+"Auf dem Gipfel steht das Windtor, und von dort kommt ein Klang, rein wie eine ferne Glocke.": "On the summit stands the Wind Gate, and from there comes a sound, pure as a distant bell.",
+"Das Dünenmeer. Setz die Füße leicht, Mira, der Sand verzeiht keine Eile.": "The Sea of Dunes. Step lightly, Mira, the sand forgives no haste.",
+"Ich bin bereit. Führ mich, Tarek.": "I’m ready. Lead me, Tarek.",
+"Gut gelaufen. Du hast ein Gefühl für Sand, das hat nicht jeder.": "Well run. You have a feel for sand, not everyone does.",
+"Treibsand. Wer hier stehen bleibt, versinkt. Wer rennt, kommt durch.": "Quicksand. Whoever stands still here sinks. Whoever runs gets through.",
+"Nicht anhalten! Und such dir feste Stellen zwischen den Mulden.": "Don’t stop! And look for firm ground between the hollows.",
+"Mein Herz rast noch. Aber wir sind drüben.": "My heart is still racing. But we’re across.",
+"Der Treibsand frisst Karawanen. Dich nicht.": "Quicksand swallows caravans. Not you.",
+"Die Salzpfanne. Der Boden ist hart und glatt, aber die Mulden dazwischen sind tückisch.": "The Salt Pan. The ground is hard and smooth, but the hollows in between are treacherous.",
+"Es glitzert überall wie Schnee, nur heiß.": "It glitters everywhere like snow, only hot.",
+"Salz. Es ist das Weiß der Wüste.": "Salt. It is the white of the desert.",
+"Der Skarabäushang. Die Käfer zeigen den Weg, wenn man ihnen folgt.": "The Scarab Slope. The beetles show the way if you follow them.",
+"Käfer als Wegweiser. Warum nicht?": "Beetles as signposts. Why not?",
+"Siehst du die goldenen Panzer? Sie sind Glück. Sammle sie ruhig.": "Do you see the golden shells? They are luck. Feel free to collect them.",
+"Das Sandmeer. Dünen so weit das Auge reicht, und dazwischen Mulden, die nur auf Schritte warten.": "The Sand Sea. Dunes as far as the eye can see, and between them hollows that only wait for footsteps.",
+"Ein Meer aus Sand ... Ich höre ihn flüstern.": "A sea of sand ... I hear it whispering.",
+"Das war der längste Marsch. Danach kommt das Tor.": "That was the longest march. After it comes the gate.",
+"Die Felsenzinne. Hier müssen wir hinauf, der Wind trägt Sand hinunter.": "The Rock Pinnacle. We have to climb here, the wind carries sand down.",
+"Von hier oben sieht man das Tor.": "From up here you can see the gate.",
+"Ja. Das Wüstentor. Dahinter liegt die Oase.": "Yes. The Desert Gate. Beyond it lies the oasis.",
+"Das Wüstentor öffnet sich erst, wenn alle Skarabäen gesammelt sind.": "The Desert Gate only opens once all the scarabs are collected.",
+"Sammle sie alle. Das Tor weiß, wer es ehrlich meint.": "Collect them all. The gate knows who means it honestly.",
+"Das Tor schwingt auf, und eine Brise bringt den Duft von Wasser und Palmen.": "The gate swings open, and a breeze brings the scent of water and palms.",
+"Die Smaragdoase. Willkommen, Mira. Zieh deine Schuhe aus, dort wird es nass.": "The Emerald Oasis. Welcome, Mira. Take off your shoes, it gets wet there.",
+"Die Smaragdoase. Seit der Klang verschwand, steigt das Wasser, und es ist nicht mehr nur Wasser.": "The Emerald Oasis. Since the sound vanished, the water has been rising, and it is no longer just water.",
+"So viel Grün. Und so still.": "So much green. And so quiet.",
+"Der Palmenpfad führt über schwankende Ufer. Ab und zu wartet ein Tümpel.": "The Palm Path leads over swaying banks. Now and then a pond waits.",
+"Ich kann schwimmen. Hoffe ich.": "I can swim. I hope.",
+"Du schwimmst wie ein Fisch. Ich hätte es nicht gedacht.": "You swim like a fish. I wouldn’t have thought it.",
+"Der Seegrund. Ein ganzes Level unter Wasser, mit Strömung, Säulen und Stille.": "The Lake Bed. A whole level underwater, with currents, pillars and silence.",
+"Halte dich an die Säulen und stoß dich mit Sprung ab, so schwimmst du nach oben.": "Hold on to the pillars and push off with a jump, that’s how you swim upward.",
+"Es war wie Fliegen, nur nasser.": "It was like flying, only wetter.",
+"Dort unten hat man früher Musik gehört. Das Wasser trägt Klang weit.": "Down there one used to hear music. Water carries sound far.",
+"Das Krokodilbecken. Etwas Dunkles gleitet im Wasser und hat Mira schon bemerkt.": "The Crocodile Pool. Something dark glides through the water and has already noticed Mira.",
+"Krokodile! Hör gut hin: Ihr Klang verrät, wie nah sie sind. Und lauf, lauf, lauf!": "Crocodiles! Listen closely: their sound tells you how near they are. And run, run, run!",
+"Das Klacken ihrer Kiefer verfolgt mich noch.": "The snapping of their jaws is still chasing me.",
+"Sie singen tief, solange sie hungrig sind.": "They sing low as long as they are hungry.",
+"Das Korallenriff. Unter Wasser schimmern die Korallen, und die Krokodile sind längst nicht allein.": "The Coral Reef. Corals shimmer underwater, and the crocodiles are far from alone.",
+"Schnell schwimmen. Kein Zögern.": "Swim fast. No hesitating.",
+"Du bist schneller als ihr Gesang. Das schafft kaum einer.": "You are faster than their song. Hardly anyone manages that.",
+"Der Schilfgürtel. Im Schilf verstecken sie sich besonders gern.": "The Reed Belt. The crocodiles especially like to hide in the reeds.",
+"Das Schilf rauscht wie eine Stimme.": "The reeds rustle like a voice.",
+"Der Wüstenwind wird es dir gleich noch erzählen.": "The desert wind will tell you about it soon enough.",
+"Das Wassertor. Alle Muscheln müssen eingesammelt werden, damit es sich öffnet, und unter Wasser lauert wieder ein Krokodil.": "The Water Gate. All shells must be collected for it to open, and underwater another crocodile lurks.",
+"Das ist das Letzte vor dem Sturm. Hol dir die Muscheln.": "This is the last stretch before the storm. Get the shells.",
+"Das Tor öffnet sich, und am Himmel liegt eine gelbe Wand.": "The gate opens, and a yellow wall lies across the sky.",
+"Der Sandsturm kommt. Bleib bei mir, Mira, so gut es geht.": "The sandstorm is coming. Stay with me, Mira, as best you can.",
+"Der erste Sandwind. Gelbe Schleier ziehen über die Dünen und nehmen manchmal die ganze Sicht.": "The First Sandwind. Yellow veils drift across the dunes and sometimes take away your whole view.",
+"Wenn alles gelb wird: weiterlaufen und dem Gedächtnis trauen!": "When everything turns yellow: keep running and trust your memory!",
+"Ich konnte kaum die Hand vor Augen sehen.": "I could barely see my hand in front of my face.",
+"Das war erst ein Vorgeschmack.": "That was only a foretaste.",
+"Die Wanderdünen. Sie wandern und der Sturm schiebt mit.": "The Shifting Dunes. They wander, and the storm pushes along.",
+"Die Düne hat sich hinter uns geschlossen. Es gibt kein Zurück.": "The dune has closed behind us. There is no way back.",
+"Die Notenschlucht. Eine Note spielt eine Brücke aus Klang, aber nur für ein paar Sekunden.": "The Note Gorge. A note plays a bridge of sound, but only for a few seconds.",
+"Die Note ruft Blöcke, aber nur kurz. Schnell, bevor der Ring leer ist!": "The note calls up blocks, but only briefly. Quick, before the ring runs out!",
+"Eine Brücke, die singt. Wunderschön und gnadenlos.": "A bridge that sings. Beautiful and merciless.",
+"Die Ruhe im Sand. Der Sturm hält den Atem an, und plötzlich ist alles ruhig.": "The Calm in the Sand. The storm holds its breath, and suddenly everything is quiet.",
+"Hörst du das? Nichts. Nur Sand.": "Do you hear that? Nothing. Only sand.",
+"Ruh dich aus, Mira. Der Rest wird schwerer als alles bisher.": "Rest, Mira. The rest will be harder than anything so far.",
+"Der Glutwind. Der Sturm kommt von allen Seiten, und die Hitze brennt.": "The Ember Wind. The storm comes from all sides, and the heat burns.",
+"Trink, atme, spring. Und vertrau dem Wind nicht.": "Drink, breathe, jump. And don’t trust the wind.",
+"Ich spüre meine Lippen nicht mehr.": "I can’t feel my lips anymore.",
+"Nur noch zwei Etappen.": "Only two more stages.",
+"Die Sandmauer. Ein steiler Anstieg, während der Sturm an Mira zerrt.": "The Sand Wall. A steep climb while the storm tugs at Mira.",
+"Hinauf. Immer hinauf.": "Up. Always up.",
+"Dort oben ist das Herz der Wüste. Man hört es schon.": "Up there is the Heart of the Desert. You can already hear it.",
+"Das Herz der Wüste. Wenn alle Sonnenscherben gesammelt sind, öffnet sich der letzte Torbogen.": "The Heart of the Desert. When all the sun shards are collected, the last archway opens.",
+"Du bist so weit gekommen. Ich glaube an dich.": "You have come so far. I believe in you.",
+"Der Sturm legt sich, und im Sand glänzt ein Splitter, golden wie die Sonne.": "The storm subsides, and in the sand gleams a shard, golden as the sun.",
+"Autsch ... Mein Kopf. Überall Sand.": "Ouch ... My head. Sand everywhere.",
+"Langsam, Fremde. Beweg dich nicht zu hastig, der Sand schluckt, was zu schnell zappelt.": "Slowly, stranger. Don’t move too hastily, the sand swallows whatever struggles too fast.",
+"Wer bist du? Und wo bin ich?": "Who are you? And where am I?",
+"Ich bin Tarek. Ich führe Karawanen durch das Dünenmeer. Und du bist hier mitten in der Wüste, ohne Wasser, ohne Kamel.": "I am Tarek. I lead caravans through the Sea of Dunes. And you are here in the middle of the desert, without water, without a camel.",
+"Ich suche die Klangsplitter der Sternenglocke. Ich muss zurück ... aber den Weg kenne ich nicht mehr.": "I’m looking for the shards of the Star Bell’s sound. I have to go back ... but I no longer know the way.",
+"Ein verlorener Klang? Seit Tagen schweigt auch unsere Oase. Komm, ich zeige dir den Weg durch die Dünen. Aber halte dich an mich.": "A lost sound? Our oasis has been silent for days too. Come, I’ll show you the way through the dunes. But stay close to me.",
+"Der Sturm legt sich. Über der Wüste liegt eine Stille, die nicht leer ist, sondern voller Weite.": "The storm subsides. Over the desert lies a silence that is not empty but full of space.",
+"Du hast das Dünenmeer, die Oase und den Sandsturm bezwungen. Mehr als die meisten Karawanenführer.": "You have conquered the Sea of Dunes, the oasis and the sandstorm. More than most caravan leaders.",
+"Ohne dich wäre ich im Sand versunken, Tarek. Danke.": "Without you I would have sunk in the sand, Tarek. Thank you.",
+"Wenn du wiederkommst, ist immer ein Platz am Feuer für dich frei.": "If you come back, there is always a place by the fire for you.",
+"Nebelhain": "Nebelhain",
+"Das Dorf im Winterschlaf": "The village in winter sleep",
+"Der stumme Berg": "The Silent Mountain",
+"Sieben Klangsplitter": "Seven shards of sound",
+"Windreich Aerien": "Windrealm Aerien",
+"Die verstummten Windharfen": "The silenced wind harps",
+"Herz des Berges": "Heart of the Mountain",
+"Der verlorene Takt": "The lost beat",
+"Rauschewald": "Rustlewood",
+"Laubenau und die Melodie im Wald": "Laubenau and the melody in the forest",
+"Nebelmoor": "Mistmoor",
+"Trommeln im Nebel": "Drums in the fog",
+"Schattental": "Shadow Valley",
+"Wer folgt dem Lied?": "Who follows the song?",
+"Tiefenfall": "Depthfall",
+"Hinab in die Dunkelheit": "Down into the darkness",
+"Schwarzwasser": "Blackwater",
+"Wo kein Licht mehr spiegelt": "Where no light reflects anymore",
+"Die Stille": "The Silence",
+"Das Lied, das nur du kennst": "The song that only you know",
+"Wolkenmeer": "Sea of Clouds",
+"Von Wolke zu Wolke": "From cloud to cloud",
+"Sturmland": "Stormland",
+"Wo die Blitze wohnen": "Where the lightning lives",
+"Windweite": "Windlands",
+"Gegen den Wind": "Against the wind",
+"Dünenmeer": "Sea of Dunes",
+"Wo der Sand verschluckt": "Where the sand swallows",
+"Smaragdoase": "Emerald Oasis",
+"Unter dem Wasserspiegel": "Beneath the water’s surface",
+"Sandsturm": "Sandstorm",
+"Wenn der Himmel gelb wird": "When the sky turns yellow",
+"Laubenau": "Laubenau",
+"Die Tiefe": "The Deep",
+"Wolkenreich": "Cloud Realm",
+"Die Wüste": "The Desert",
+"Beere": "Berry",
+"🍓 Beeren": "🍓 Berries",
+"Beeren": "Berries",
+"Windnote": "Wind note",
+"♪ Windnoten": "♪ Wind notes",
+"Windnoten": "Wind notes",
+"Resonanzperle": "Resonance pearl",
+"● Perlen": "● Pearls",
+"Resonanzperlen": "Resonance pearls",
+"Herbstblatt": "Autumn leaf",
+"🍁 Blätter": "🍁 Leaves",
+"Herbstblätter": "Autumn leaves",
+"Tropfen": "Drop",
+"💧 Tropfen": "💧 Drops",
+"Laterne": "Lantern",
+"🏮 Laternen": "🏮 Lanterns",
+"Laternen": "Lanterns",
+"Lichtfunke": "Light spark",
+"✦ Funken": "✦ Sparks",
+"Lichtfunken": "Light sparks",
+"Rune": "Rune",
+"ᚱ Runen": "ᚱ Runes",
+"Runen": "Runes",
+"Glutstück": "Ember",
+"♦ Glut": "♦ Embers",
+"Glutstücke": "Embers",
+"Wolkenfeder": "Cloud feather",
+"🪶 Federn": "🪶 Feathers",
+"Wolkenfedern": "Cloud feathers",
+"Blitzsplitter": "Lightning shard",
+"⚡ Splitter": "⚡ Shards",
+"Windperle": "Wind pearl",
+"🌀 Perlen": "🌀 Pearls",
+"Windperlen": "Wind pearls",
+"Skarabäus": "Scarab",
+"🪲 Skarabäen": "🪲 Scarabs",
+"Skarabäen": "Scarabs",
+"Muschel": "Shell",
+"🐚 Muscheln": "🐚 Shells",
+"Muscheln": "Shells",
+"Sonnenstein": "Sun stone",
+"☀ Steine": "☀ Stones",
+"Sonnensteine": "Sun stones",
+"Der Weg zur Hütte": "The Way to the Cabin",
+"Der Grat": "The Ridge",
+"Die schweigenden Tannen": "The Silent Firs",
+"Das Gletschertor": "The Glacier Gate",
+"Die Echohöhlen": "The Echo Caves",
+"Der Kristallhain": "The Crystal Grove",
+"Der Sturmkamm": "The Storm Ridge",
+"Die Gipfelwand": "The Summit Wall",
+"Die Sternenglocke": "The Star Bell",
+"Windhafen": "Wind Harbor",
+"Wolkenbrücken": "Cloud Bridges",
+"Die Harfeninseln": "The Harp Islands",
+"Das Sturmauge": "The Eye of the Storm",
+"Donnerwolken": "Thunderclouds",
+"Die Orgelpfeifen": "The Organ Pipes",
+"Das Windtor": "The Wind Gate",
+"Der Abstieg": "The Descent",
+"Pulsierende Gänge": "Pulsing Passages",
+"Die Magmakammer": "The Magma Chamber",
+"Der Klangsee": "The Sound Lake",
+"Die Kristallkathedrale": "The Crystal Cathedral",
+"Die Resonanzkammer": "The Resonance Chamber",
+"Das Herz des Berges": "The Heart of the Mountain",
+"Der Ruf über die Hügel": "The Call across the Hills",
+"Der Rauschepfad": "The Rustle Path",
+"Die Pilzhöhle": "The Mushroom Cave",
+"Regenbrücken": "Rain Bridges",
+"Die Ahornleiter": "The Maple Ladder",
+"Der Windhang": "The Wind Slope",
+"Die Tanzende Eiche": "The Dancing Oak",
+"Das Nebelmoor": "The Mistmoor",
+"Schilfflüstern": "Reed Whispers",
+"Der Trommelfall": "The Drum Fall",
+"Tropfsteinsteg": "Stalactite Walkway",
+"Die Gongklippen": "The Gong Cliffs",
+"Der Abendgrat": "The Evening Ridge",
+"Das Trommelwehr": "The Drum Weir",
+"Das Schattental": "The Shadow Valley",
+"Flüsternde Schatten": "Whispering Shadows",
+"Der Laternenweg": "The Lantern Path",
+"Der Dornenhang": "The Thorn Slope",
+"Die Schattenbrücke": "The Shadow Bridge",
+"Der Mondturm": "The Moon Tower",
+"Die Flötenhalle": "The Flute Hall",
+"Der Sturz": "The Fall",
+"Die Schwarzen Tore": "The Black Gates",
+"Das Kristallgewölbe": "The Crystal Vault",
+"Der freie Fall": "The Free Fall",
+"Das Labyrinth der Tore": "The Labyrinth of Gates",
+"Der Schacht": "The Shaft",
+"Das Tor der Tiefe": "The Gate of the Deep",
+"Der Schwarze See": "The Black Lake",
+"Die Fähre ins Nichts": "The Ferry into Nothing",
+"Der Abstieg ins Wasser": "The Descent into the Water",
+"Das Wasserlabyrinth": "The Water Labyrinth",
+"Die Tropfsteinhöhle": "The Stalactite Cave",
+"Der Schattenkanal": "The Shadow Channel",
+"Die Schwarze Quelle": "The Black Spring",
+"Die Stille beginnt": "The Silence Begins",
+"Der Weg hinab": "The Way Down",
+"Das Echo der Schritte": "The Echo of Steps",
+"Der Spiegelgang": "The Mirror Passage",
+"Der tiefste Fall": "The Deepest Fall",
+"Der Aufstieg aus dem Nichts": "The Ascent from Nothing",
+"Das Lied in dir": "The Song within You",
+"Die erste Wolke": "The First Cloud",
+"Wolkenhüpfer": "Cloud Hopper",
+"Der Aufwind": "The Updraft",
+"Die Wolkenfelder": "The Cloud Fields",
+"Das sinkende Meer": "The Sinking Sea",
+"Die Wolkentreppe": "The Cloud Stairs",
+"Das Wolkentor": "The Cloud Gate",
+"Der erste Donner": "The First Thunder",
+"Die schwarze Front": "The Black Front",
+"Die Blitzgasse": "Lightning Alley",
+"Das Auge des Sturms": "The Eye of the Storm",
+"Funkenflug": "Flying Sparks",
+"Der Sturmturm": "The Storm Tower",
+"Das Gewittertor": "The Thunder Gate",
+"Die erste Böe": "The First Gust",
+"Die Windscheide": "The Windshear",
+"Der Windsprung": "The Wind Leap",
+"Der Wirbel": "The Whirl",
+"Die Gegenwinde": "The Headwinds",
+"Der Sturmwind": "The Stormwind",
+"Der Dünenpfad": "The Dune Path",
+"Das Treibsandfeld": "The Quicksand Field",
+"Die Salzpfanne": "The Salt Pan",
+"Der Skarabäushang": "The Scarab Slope",
+"Das Sandmeer": "The Sand Sea",
+"Die Felsenzinne": "The Rock Pinnacle",
+"Das Wüstentor": "The Desert Gate",
+"Die Smaragdoase": "The Emerald Oasis",
+"Der Palmenpfad": "The Palm Path",
+"Der Seegrund": "The Lake Bed",
+"Das Krokodilbecken": "The Crocodile Pool",
+"Das Korallenriff": "The Coral Reef",
+"Der Schilfgürtel": "The Reed Belt",
+"Das Wassertor": "The Water Gate",
+"Der erste Sandwind": "The First Sandwind",
+"Die Wanderdünen": "The Shifting Dunes",
+"Die Notenschlucht": "The Note Gorge",
+"Die Ruhe im Sand": "The Calm in the Sand",
+"Der Glutwind": "The Ember Wind",
+"Die Sandmauer": "The Sand Wall",
+"Das Herz der Wüste": "The Heart of the Desert",
+"Start": "Start",
+"Waldrand": "Forest Edge",
+"Hüttenpfad": "Cabin Path",
+"Laufen: A / D oder ← →": "Run: A / D or ← →",
+"Springen: Leertaste, W oder ↑": "Jump: Space, W or ↑",
+"Stacheln sind tödlich – spring drüber!": "Spikes are deadly – jump over them!",
+"Beeren sind ein Bonus. Du musst sie nicht sammeln.": "Berries are a bonus. You don’t have to collect them.",
+"Ein Absatz? Spring einfach hinauf.": "A ledge? Just jump up.",
+"Fahnen sind Checkpoints. Hier geht es nach einem Sturz weiter.": "Flags are checkpoints. After a fall you continue from here.",
+"Grat": "Ridge",
+"Wandpfad": "Wall Path",
+"Dash: Shift oder X. Halte dazu eine Richtung gedrückt.": "Dash: Shift or X. Hold a direction while you do.",
+"Der Dash lädt sich am Boden wieder auf.": "The dash recharges on the ground.",
+"Wandsprung: Spring gegen eine Wand, dann erneut Sprung!": "Wall jump: jump against a wall, then jump again!",
+"Kombiniere: Sprung, Wandsprung, Dash. Der Dash lädt sich auch an Wänden auf.": "Combine: jump, wall jump, dash. The dash also recharges on walls.",
+"Waldlichtung": "Forest Clearing",
+"Eisbach": "Ice Brook",
+"Tannenkamm": "Fir Ridge",
+"Eisbrücke": "Ice Bridge",
+"Spaltenrand": "Crevasse Edge",
+"Gletscherzunge": "Glacier Tongue",
+"Tropfsteinhalle": "Stalactite Hall",
+"Brüchiger Grat": "Crumbling Ridge",
+"Messingfeder": "Brass Spring",
+"Tiefer Gang": "Deep Passage",
+"Singende Kristalle": "Singing Crystals",
+"Glaszwischenraum": "Glass Gap",
+"Lichtadern": "Light Veins",
+"Hainspitze": "Grove Peak",
+"Windschatten": "Wind Shadow",
+"Sturmwand": "Storm Wall",
+"Kamm": "Crest",
+"Grat der Böen": "Ridge of Gusts",
+"Wandfuß": "Wall Foot",
+"Eisband": "Ice Band",
+"Sternenpfad": "Star Path",
+"Sternenwand": "Star Wall",
+"Glockenpfad": "Bell Path",
+"Letzter Anstieg": "Last Ascent",
+"Vor der Glocke": "Before the Bell",
+"Hafenturm": "Harbor Tower",
+"Windmühle": "Windmill",
+"Ankerplatz": "Anchorage",
+"Erste Wolke": "First Cloud",
+"Dunstbank": "Haze Bank",
+"Nebelbrücke": "Mist Bridge",
+"Wolkenhain": "Cloud Grove",
+"Erste Saite": "First String",
+"Bassinsel": "Bass Island",
+"Diskantinsel": "Treble Island",
+"Harfenspitze": "Harp Peak",
+"Windwirbel": "Wind Whirl",
+"Auge": "Eye",
+"Donnergrollen": "Thunder Rumble",
+"Blitzfeld": "Lightning Field",
+"Gewitterinsel": "Storm Island",
+"Wolkenwall": "Cloud Wall",
+"Auge des Sturms": "Eye of the Storm",
+"Tiefe Pfeife": "Deep Pipe",
+"Mittlere Pfeife": "Middle Pipe",
+"Hohe Pfeife": "High Pipe",
+"Torstufen": "Gate Steps",
+"Böenkamm": "Gust Crest",
+"Torbogen": "Archway",
+"Schlüsselinsel": "Key Island",
+"Windkrone": "Wind Crown",
+"Erster Puls": "First Pulse",
+"Tropfgang": "Dripping Passage",
+"Schlund": "Maw",
+"Herzschlag": "Heartbeat",
+"Doppelschlag": "Double Beat",
+"Synkope": "Syncopation",
+"Echo-Gang": "Echo Passage",
+"Glutader": "Ember Vein",
+"Lavafall": "Lava Fall",
+"Brodelnder Gang": "Bubbling Passage",
+"Magmaschlot": "Magma Chimney",
+"Ufer": "Shore",
+"Lichtsee": "Light Lake",
+"Schallinsel": "Sound Island",
+"Wellenbrecher": "Breakwater",
+"Portal": "Portal",
+"Hauptschiff": "Nave",
+"Orgelempore": "Organ Loft",
+"Chorgestühl": "Choir Stalls",
+"Altarraum": "Chancel",
+"Unterer Hall": "Lower Hall",
+"Schwingung": "Vibration",
+"Resonanz": "Resonance",
+"Vorkammer": "Antechamber",
+"Aderngang": "Vein Passage",
+"Pulsfeld": "Pulse Field",
+"Kammer": "Chamber",
+"Vorhof": "Forecourt",
+"Blumenwiese": "Flower Meadow",
+"Hügelkamm": "Hill Crest",
+"Erste Blätter": "First Leaves",
+"Dorfrand": "Village Edge",
+"Laubweg": "Leaf Path",
+"Pilzwiese": "Mushroom Meadow",
+"Rauschbach": "Rustle Brook",
+"Eichenhain": "Oak Grove",
+"Wurzelsteg": "Root Walkway",
+"Lichtung": "Clearing",
+"Pilzring": "Mushroom Ring",
+"Sporenkammer": "Spore Chamber",
+"Pfützenfeld": "Puddle Field",
+"Holzsteg": "Wooden Walkway",
+"Mühlbach": "Mill Brook",
+"Regenwand": "Rain Wall",
+"Aufstieg": "Ascent",
+"Untere Äste": "Lower Branches",
+"Kronenspitze": "Treetop",
+"Kronenpfad": "Canopy Path",
+"Böenhang": "Gust Slope",
+"Kahle Kuppe": "Bare Hilltop",
+"Sturmbaum": "Storm Tree",
+"Hangkante": "Slope Edge",
+"Wurzelkeller": "Root Cellar",
+"Stammtanz": "Trunk Dance",
+"Torffeld": "Peat Field",
+"Moorsteg": "Moor Walkway",
+"Irrlichter": "Will-o’-the-Wisps",
+"Nebelbank": "Fog Bank",
+"Schilfgürtel": "Reed Belt",
+"Flüsterinsel": "Whisper Island",
+"Reiherbank": "Heron Bank",
+"Entenpfad": "Duck Path",
+"Fallfuß": "Fall Foot",
+"Nasse Wand": "Wet Wall",
+"Fallspitze": "Fall Top",
+"Trommelsims": "Drum Ledge",
+"Donnerplatte": "Thunder Slab",
+"Tropfsteinhöhle": "Stalactite Cave",
+"Wasserwand": "Water Wall",
+"Gongnische": "Gong Niche",
+"Gongaufstieg": "Gong Ascent",
+"Bronzewand": "Bronze Wall",
+"Gongspitze": "Gong Peak",
+"Hallsteg": "Echo Walkway",
+"Abendglut": "Evening Glow",
+"Rotes Band": "Red Band",
+"Letzte Sonne": "Last Sun",
+"Wehrkrone": "Weir Crown",
+"Schleusentor": "Sluice Gate",
+"Trommelsteg": "Drum Walkway",
+"Gischtfeld": "Spray Field",
+"Dämmerpfad": "Twilight Path",
+"Schattenwiese": "Shadow Meadow",
+"Dornenzaun": "Thorn Fence",
+"Talmitte": "Mid-Valley",
+"Erstes Flüstern": "First Whisper",
+"Dunkler Hain": "Dark Grove",
+"Flüsterbach": "Whisper Brook",
+"Schattenrand": "Shadow Edge",
+"Hangfuß": "Slope Foot",
+"Dornenhang": "Thorn Slope",
+"Hangkamm": "Slope Crest",
+"Laternenreihe": "Lantern Row",
+"Schattenzaun": "Shadow Fence",
+"Dornenfuß": "Thorn Foot",
+"Stachelband": "Spike Band",
+"Rankenwand": "Vine Wall",
+"Brückenkopf": "Bridgehead",
+"Pfeilerfuß": "Pillar Foot",
+"Pfeiler": "Pillar",
+"Zinnenpfad": "Battlement Path",
+"Schattenjoch": "Shadow Yoke",
+"Nebelbogen": "Mist Arch",
+"Turmfuß": "Tower Foot",
+"Wendeltreppe": "Spiral Staircase",
+"Mondgalerie": "Moon Gallery",
+"Torhalle": "Gate Hall",
+"Säulengang": "Colonnade",
+"Empore": "Gallery",
+"Die Orgel": "The Organ",
+"Pfeifenwald": "Pipe Forest",
+"Erster Abgrund": "First Abyss",
+"Schwarzer Spalt": "Black Crack",
+"Tiefer": "Deeper",
+"Erstes Tor": "First Gate",
+"Verirrt": "Lost",
+"Zweites Tor": "Second Gate",
+"Dunkelrand": "Dark Edge",
+"Schwarze Portale versetzen dich an einen anderen Ort.": "Black portals teleport you to another place.",
+"Leuchtader": "Glow Vein",
+"Kristallsaal": "Crystal Hall",
+"Glimmerkluft": "Glimmer Gorge",
+"Gewölbeende": "Vault End",
+"Absatz": "Ledge",
+"Schacht": "Shaft",
+"Sinkflug": "Descent",
+"Drei Tore": "Three Gates",
+"Im Kreis": "In Circles",
+"Falsche Spur": "False Trail",
+"Wahres Tor": "True Gate",
+"Schachtmund": "Shaft Mouth",
+"Tropfstein": "Stalactite",
+"Torwacht": "Gate Guard",
+"Drehung": "Turn",
+"Schwarzer Hof": "Black Courtyard",
+"Spiegelpfad": "Mirror Path",
+"Tiefenkamm": "Depth Crest",
+"Fährsteg": "Ferry Walkway",
+"Inselkette": "Island Chain",
+"Steig ins Boot – es fährt von allein ans andere Ufer.": "Board the boat – it carries you to the other shore by itself.",
+"Anleger": "Landing",
+"Nebelströmung": "Misty Current",
+"Ohne Ufer": "No Shore",
+"Fernes Licht": "Distant Light",
+"Tropfwand": "Dripping Wall",
+"Wasserfall": "Waterfall",
+"Kalte Tiefe": "Cold Depth",
+"Strudel": "Whirlpool",
+"Kaminfuß": "Chimney Foot",
+"Kamin Spitze": "Chimney Top",
+"Kaltes Band": "Cold Band",
+"Schwarzer Steg": "Black Walkway",
+"Sickerwasser": "Seepage",
+"Stalaktit": "Stalactite",
+"Schleuse": "Sluice",
+"Kanal": "Channel",
+"Strömung": "Current",
+"Quellrand": "Spring Edge",
+"Schwarzer Pfad": "Black Path",
+"Abfluss": "Outflow",
+"Kein Laut": "Not a Sound",
+"Leere Halle": "Empty Hall",
+"Flüsternde Wand": "Whispering Wall",
+"Rand": "Edge",
+"Erste Stufe": "First Step",
+"Fallgrube": "Pitfall",
+"Dunkler Schlund": "Dark Maw",
+"Echo": "Echo",
+"Doppelschritt": "Double Step",
+"Verlorene Spur": "Lost Trail",
+"Wiederkehr": "Return",
+"Schlot": "Flue",
+"Schlotkamm": "Flue Crest",
+"Rückweg": "Way Back",
+"Schwarzer Grat": "Black Ridge",
+"Kante": "Ledge",
+"Der Schlund": "The Maw",
+"Freier Fall": "Free Fall",
+"Kalter Fels": "Cold Rock",
+"Ohne Namen": "Nameless",
+"Schweigende Wand": "Silent Wall",
+"Stummes Tor": "Mute Gate",
+"Schwarzer Saal": "Black Hall",
+"Die Wendung": "The Turn",
+"Irrlicht": "Will-o’-the-Wisp",
+"Letzter Gang": "Last Passage",
+"Das Lied": "The Song",
+"Wolkenpfad": "Cloud Path",
+"Himmelsrand": "Sky Edge",
+"Graue Wolken sinken, sobald du darauf stehst. Bleib nicht stehen!": "Gray clouds sink as soon as you stand on them. Don’t stand still!",
+"Sprungwolke": "Jump Cloud",
+"Flaumfeld": "Fluff Field",
+"Luftbrücke": "Air Bridge",
+"Weißer Grat": "White Ridge",
+"Windschacht": "Wind Shaft",
+"Aufwärts": "Upward",
+"Feldrand": "Field Edge",
+"Weiße Wiese": "White Meadow",
+"Sinkfeld": "Sinking Field",
+"Wattewand": "Cotton Wall",
+"Strand der Wolken": "Cloud Beach",
+"Sinkwellen": "Sinking Waves",
+"Flachwasser": "Shallows",
+"Tiefes Weiß": "Deep White",
+"Unterste Stufe": "Lowest Step",
+"Treppenwolke": "Stair Cloud",
+"Torpfad": "Gate Path",
+"Wolkenmauer": "Cloud Wall",
+"Sinkgarten": "Sinking Garden",
+"Weißer Saal": "White Hall",
+"Donnerhügel": "Thunder Hill",
+"Dunkle Wolke": "Dark Cloud",
+"Erste Funken": "First Sparks",
+"Funken fallen – eine halbe Sekunde später schlägt der Blitz ein. Lauf weiter!": "Sparks fall – half a second later the lightning strikes. Keep running!",
+"Frontlinie": "Front Line",
+"Schwarzer Hang": "Black Slope",
+"Sturmkante": "Storm Edge",
+"Gassenmund": "Alley Mouth",
+"Blitzschlag": "Lightning Strike",
+"Sturmrand": "Storm Rim",
+"Wirbel": "Whirl",
+"Windstille": "Calm",
+"Funkenfeld": "Spark Field",
+"Glühender Rand": "Glowing Rim",
+"Knisterpfad": "Crackle Path",
+"Treppenschacht": "Stair Shaft",
+"Blitzfenster": "Lightning Window",
+"Torfeld": "Gate Field",
+"Eisenwolken": "Iron Clouds",
+"Knisterhalle": "Crackle Hall",
+"Donnersaal": "Thunder Hall",
+"Blitzwacht": "Lightning Watch",
+"Das Tor": "The Gate",
+"Böenrand": "Gust Edge",
+"Windwiese": "Wind Meadow",
+"Erster Sprung": "First Jump",
+"Lass dich vom Wind über die Lücke tragen – spring hinein!": "Let the wind carry you over the gap – jump in!",
+"Scheide": "Divide",
+"Kreuzwind": "Crosswind",
+"Wechselböen": "Shifting Gusts",
+"Absprung": "Takeoff",
+"Windbrücke": "Wind Bridge",
+"Große Lücke": "Great Gap",
+"Luftstrom": "Air Stream",
+"Wirbelfuß": "Whirl Foot",
+"Aufwärtsdrall": "Upward Spin",
+"Mitte": "Middle",
+"Gegenwind": "Headwind",
+"Stemmpfad": "Bracing Path",
+"Böenwand": "Gust Wall",
+"Rückenwind": "Tailwind",
+"Windfuß": "Wind Foot",
+"Zerrender Hang": "Tugging Slope",
+"Erste Düne": "First Dune",
+"Salzbusch": "Salt Bush",
+"Kakteenfeld": "Cactus Field",
+"Dünenkamm": "Dune Crest",
+"Wüstenrand": "Desert Edge",
+"Treibsand! Er bremst und verschluckt dich langsam. Spring dich frei!": "Quicksand! It slows you and slowly swallows you. Jump free!",
+"Sinkende Mitte": "Sinking Middle",
+"Steininsel": "Stone Island",
+"Zähes Gelb": "Sticky Yellow",
+"Fester Grund": "Firm Ground",
+"Pfannenrand": "Pan Edge",
+"Weißes Salz": "White Salt",
+"Spiegelung": "Mirage",
+"Knirschender Grund": "Crunching Ground",
+"Salzkrone": "Salt Crown",
+"Berühre die Note: Blöcke erscheinen über der Schlucht – aber nur kurz. Der Kreis zeigt die Zeit!": "Touch the note: blocks appear over the gorge – but only briefly. The ring shows the time!",
+"Käferpfad": "Beetle Path",
+"Steile Rinne": "Steep Gully",
+"Meeresrand": "Sea Edge",
+"Sandwelle": "Sand Wave",
+"Dünental": "Dune Valley",
+"Brandung": "Surf",
+"Wellenkamm": "Wave Crest",
+"Sandküste": "Sand Coast",
+"Zinnenfuß": "Pinnacle Foot",
+"Heißer Fels": "Hot Rock",
+"Spalt": "Cleft",
+"Tarek wartet": "Tarek Waits",
+"Sandglas": "Sandglass",
+"Heiße Halle": "Hot Hall",
+"Oasenrand": "Oasis Edge",
+"Erste Quelle": "First Spring",
+"Palmenhain": "Palm Grove",
+"Tiefes Becken": "Deep Basin",
+"Schilfufer": "Reed Bank",
+"Unter Wasser: Sprung = Schwimmstoß, ↓ taucht. Schwimm unter den Wänden hindurch!": "Underwater: Jump = swim stroke, ↓ dives. Swim under the walls!",
+"Palmenfuß": "Palm Foot",
+"Kokosweg": "Coconut Way",
+"Hainende": "Grove End",
+"Tauchstelle": "Diving Spot",
+"Erste Riffe": "First Reefs",
+"Algenwald": "Seaweed Forest",
+"Schwimmen: Sprung = Stoß nach oben, ↓ = tauchen. Weich um die Felsen herum!": "Swimming: Jump = stroke upward, ↓ = dive. Steer around the rocks!",
+"Beckenrand": "Basin Edge",
+"Gelbe Augen": "Yellow Eyes",
+"Sumpfsteg": "Swamp Walkway",
+"Knurren": "Growl",
+"Rettungsufer": "Rescue Shore",
+"Riffkante": "Reef Edge",
+"Rote Korallen": "Red Corals",
+"Schnappschlucht": "Snapping Gorge",
+"Strömungsband": "Current Band",
+"Perlengrund": "Pearl Bed",
+"Schilfsaum": "Reed Fringe",
+"Verborgener Teich": "Hidden Pond",
+"Zähne im Schilf": "Teeth in the Reeds",
+"Schlammpfad": "Mud Path",
+"Uferwall": "Bank Wall",
+"Ausweg": "Way Out",
+"Torwasser": "Gate Water",
+"Tiefenstrom": "Deep Current",
+"Dunkles Riff": "Dark Reef",
+"Krokodilgrab": "Crocodile Grave",
+"Muschelwand": "Shell Wall",
+"Windrand": "Wind Edge",
+"Gelber Schleier": "Yellow Veil",
+"Kratzender Wind": "Scratching Wind",
+"Flugsand": "Drifting Sand",
+"Dünenfuß": "Dune Foot",
+"Wandernder Kamm": "Wandering Crest",
+"Verwehte Spur": "Blown-Away Trail",
+"Dünengrat": "Dune Ridge",
+"Schluchteingang": "Gorge Entrance",
+"Klang im Fels": "Sound in the Rock",
+"Hallende Wand": "Echoing Wall",
+"Singender Sand": "Singing Sand",
+"Schluchtende": "Gorge End",
+"Stille Düne": "Quiet Dune",
+"Glutrand": "Ember Rim",
+"Heißer Hauch": "Hot Breath",
+"Brennender Kamm": "Burning Crest",
+"Funkensand": "Spark Sand",
+"Aschedüne": "Ash Dune",
+"Glutende": "Ember End",
+"Mauerfuß": "Wall Foot",
+"Bröckelnde Wand": "Crumbling Wall",
+"Windspalt": "Wind Cleft",
+"Herzrand": "Heart Rim",
+"Sonnenfeld": "Sun Field",
+"Brennender Pfad": "Burning Path",
+"Wirbelwand": "Whirl Wall",
+"Sonnenhalle": "Sun Hall",
+"Letzter Sturm": "Last Storm"
+});
 
 /* ===== LEVEL-BAUKASTEN ===== */
 function rng(seed){let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let t=a;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296;};}
@@ -1032,8 +2136,8 @@ buildAll();
 const PLAYER={name:'Mira'};
 const DRESS=[{n:'Violett',c:'#6a3fa8'},{n:'Pink',c:'#c8508a'},{n:'Rot',c:'#b82030'},{n:'Orange',c:'#d2662a'},{n:'Gelb',c:'#d4a82a'},{n:'Grün',c:'#2f8a4a'},{n:'Türkis',c:'#1f8a8f'},{n:'Blau',c:'#2f5fb8'},{n:'Burgund',c:'#7d1f38'}];
 const gen2=n=>/[sßxz]$/i.test(n)?n+"'":n+'s';
-const nm=t=>t.replace(/Miras\b/g,gen2(PLAYER.name)).replace(/Mira/g,PLAYER.name);
-const CHAR={mira:{get name(){return PLAYER.name;},col:'#ffb3c9'},sage:{name:'Eldrin',col:'#b9d4ff'},zeph:{name:'Zephyr',col:'#aef0ff'},echo:{name:'Echo',col:'#ffd08a'},
+const nm=t=>tr(t).replace(/Miras\b/g,gen2(PLAYER.name)).replace(/Mira/g,PLAYER.name);
+const CHAR={mira:{get name(){return PLAYER.name;},get col(){return MC.s;}},sage:{name:'Eldrin',col:'#b9d4ff'},zeph:{name:'Zephyr',col:'#aef0ff'},echo:{name:'Echo',col:'#ffd08a'},
   pip:{name:'Pip',col:'#ffc88a'},pfeifer:{name:'Der Pfeifer',col:'#c8b4ff'},tarek:{name:'Tarek',col:'#ffd08a'},stimme:{name:'Eine ferne Stimme',col:'#ffe9a0'},narr:{name:'',col:'#ffffff'}};
 const C=(bg,theme,cast,lines,mus)=>({bg,theme,cast,lines,mus});
 const STORY={
@@ -1543,8 +2647,8 @@ STORY.w10g={intro:C('sky','cl3',['mira'],[['narr',"Das Wolkentor ist verschlosse
 STORY.w11a={intro:C('sky','st1',['mira'],[['narr',"Der Himmel wird schwarz. Schwere Wolken hängen wie ein Deckel über dem Land, und aus der Ferne rollt der erste Donner heran."],
     ['mira',"Funken, die fallen, und dann ein Schlag? Ich muss aufpassen, wo ich stehe."]]),
   outro:C('sky','st1',['mira'],[['mira',"Der Blitz hat mich gesucht, aber nicht gefunden. Vorausahnen, laufen, weiter."]])};
-STORY.w11b={intro:C('sky','st1',['mira'],[['narr',"Die schwarze Front schiebt sich über die Wolken wie eine Mauer. Regen peitscht, Alle fünf Sekunden zuckt ein Blitz."]]),
-  outro:C('sky','st1',['mira'],[['mira',"Sieben Sekunden. Ich zähle mit, und ich komme jedes Mal davon."]])};
+STORY.w11b={intro:C('sky','st1',['mira'],[['narr',"Die schwarze Front schiebt sich über die Wolken wie eine Mauer. Regen peitscht, alle fünf Sekunden zuckt ein Blitz."]]),
+  outro:C('sky','st1',['mira'],[['mira',"Fünf Sekunden. Ich zähle mit, und ich komme jedes Mal davon."]])};
 STORY.w11c={intro:C('sky','st2',['mira'],[['narr',"Die Blitzgasse: eine enge Wolkenschlucht, in der jeder Schlag widerhallt. Der Weg führt nach oben."]]),
   outro:C('sky','st2',['mira'],[['narr',"Oben wird der Donner leiser, und etwas wie Respekt schwingt im Grollen mit."]])};
 STORY.w11d={intro:C('sky','st2',['mira'],[['narr',"Das Auge des Sturms. Wo es still sein sollte, wirbeln graue Wolken um Mira, und Blitze folgen jedem Schritt."]]),
@@ -1987,7 +3091,7 @@ function setMusic(on){AU.music=on;if(AU.mus&&AU.ctx)AU.mus.gain.setTargetAtTime(
 function setDuck(f){AU.duck=f;if(AU.mus&&AU.ctx&&AU.music)AU.mus.gain.setTargetAtTime(.5*f,AU.ctx.currentTime,.15);}
 /* ---- Sprache ---- */
 const VO={voices:[]};
-function loadVoices(){if(!window.speechSynthesis)return;VO.voices=speechSynthesis.getVoices().filter(v=>/^de/i.test(v.lang));}
+function loadVoices(){if(!window.speechSynthesis)return;VO.voices=speechSynthesis.getVoices().filter(v=>(LANG==='en'?/^en/i:/^de/i).test(v.lang));}
 if(window.speechSynthesis){loadVoices();speechSynthesis.onvoiceschanged=loadVoices;}
 const VSET={mira:{p:1.12,r:.98,f:1},sage:{p:.78,r:.9,f:0},zeph:{p:1.25,r:1,f:1},echo:{p:.88,r:.9,f:0},narr:{p:1,r:.95,f:-1}};
 function voiceScore(v){let s=0;const n=v.name+' '+(v.voiceURI||'');
@@ -1997,8 +3101,8 @@ function voiceScore(v){let s=0;const n=v.name+' '+(v.voiceURI||'');
   if(/^de[-_]DE/i.test(v.lang))s+=2;if(v.localService===false)s+=1;return s;}
 function pickVoice(who){
   const vs=VO.voices.slice().sort((x,y)=>voiceScore(y)-voiceScore(x));if(!vs.length)return null;
-  const isF=v=>/anna|petra|helena|katja|marlene|female|weiblich|hedda|amala|vicki|seraphina|ingrid|google deutsch/i.test(v.name);
-  const isM=v=>/markus|stefan|hans|conrad|killian|male|männlich|jonas|florian|bernd|thomas|martin|yannick|diego|christoph|reed|daniel/i.test(v.name)&&!/female/i.test(v.name);
+  const isF=v=>/anna|petra|helena|katja|marlene|female|weiblich|hedda|amala|vicki|seraphina|ingrid|google deutsch|samantha|zira|susan|karen|moira|tessa|fiona|jenny|aria|google uk english female|google us english/i.test(v.name);
+  const isM=v=>/markus|stefan|hans|conrad|killian|male|männlich|jonas|florian|bernd|thomas|martin|yannick|diego|christoph|reed|daniel|david|mark|alex|fred|george|guy|ryan|google uk english male/i.test(v.name)&&!/female/i.test(v.name);
   const want=VSET[who]?VSET[who].f:-1;
   const f=vs.filter(isF),m=vs.filter(isM);
   if(want===1&&f.length)return f[0];
@@ -2013,7 +3117,7 @@ function speak(who,text){
   try{
     speechSynthesis.cancel();
     const u=new SpeechSynthesisUtterance(text),s=VSET[who]||VSET.narr,v=pickVoice(who),id=++speakId;
-    u.lang='de-DE';if(v)u.voice=v;u.pitch=s.p;u.rate=s.r;u.volume=1;
+    u.lang=LANG==='en'?'en-US':'de-DE';if(v)u.voice=v;u.pitch=s.p;u.rate=s.r;u.volume=1;
     u.onstart=()=>setDuck(.62);u.onend=u.onerror=()=>{if(id===speakId)setDuck(1);if(AU.ctx&&AU.ctx.state!=='running'){try{AU.ctx.resume();}catch(e){}}};
     speechSynthesis.speak(u);
   }catch(e){}
@@ -2023,7 +3127,7 @@ function stopSpeak(){try{if(window.speechSynthesis)speechSynthesis.cancel();}cat
 /* ===== RENDER: Zeichenfunktionen ===== */
 const hash=n=>{const x=Math.sin(n*127.1+311.7)*43758.5453;return x-Math.floor(x);};
 function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
-function txt(s,x,y,font,col,al){ctx.font=font;ctx.fillStyle=col;ctx.textAlign=al||'left';ctx.fillText(s,x,y);}
+function txt(s,x,y,font,col,al){ctx.font=font;ctx.fillStyle=col;ctx.textAlign=al||'left';ctx.fillText(tr(s),x,y);}
 function wrapText(s,maxW){const words=s.split(' '),lines=[];let cur='';for(const w of words){const t=cur?cur+' '+w:w;if(ctx.measureText(t).width>maxW&&cur){lines.push(cur);cur=w;}else cur=t;}if(cur)lines.push(cur);return lines;}
 function hexLum(h){const n=parseInt(h.slice(1),16);return ((n>>16)&255)*.3+((n>>8)&255)*.59+(n&255)*.11;}
 function rgba0(c){const m=/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})/i.exec(c);if(m)return 'rgba('+parseInt(m[1],16)+','+parseInt(m[2],16)+','+parseInt(m[3],16)+',0)';const q=/^#([0-9a-f])([0-9a-f])([0-9a-f])$/i.exec(c);if(q)return 'rgba('+parseInt(q[1]+q[1],16)+','+parseInt(q[2]+q[2],16)+','+parseInt(q[3]+q[3],16)+',0)';return 'rgba(255,255,255,0)';}
@@ -2466,6 +3570,7 @@ function drawChasers(L,S,now){
   });
 }
 function drawHint(text,now){
+  text=tr(text);
   ctx.font='600 17px system-ui';const lines=wrapText(text,520),w=Math.min(560,Math.max(...lines.map(l=>ctx.measureText(l).width))+44),h=lines.length*24+22,x=(W-w)/2,y=62;
   ctx.globalAlpha=.94;ctx.fillStyle='#10192cdd';rr(x,y,w,h,14);ctx.fill();ctx.strokeStyle='#ffdc82';ctx.lineWidth=2;ctx.stroke();ctx.globalAlpha=1;
   ctx.fillStyle='#fff';ctx.textAlign='center';lines.forEach((l,i)=>ctx.fillText(l,W/2,y+30+i*24));
@@ -2492,7 +3597,7 @@ function drawTitle(now,menu,hov){
   ctx.shadowColor='#ffb45488';ctx.shadowBlur=24;txt('MOUNTAIN',W/2,194,'900 84px system-ui',g,'center');ctx.shadowBlur=0;
   txt('Mira und der Klang des stummen Berges',W/2,230,'italic 18px system-ui','#b9c9e8','center');
   menu.forEach((m,i)=>{const x=W/2-150,y=290+i*64,h=hov===i;ctx.fillStyle=h?'#ffdc82':'#18264acc';rr(x,y,300,50,14);ctx.fill();ctx.strokeStyle='#ffdc82';ctx.lineWidth=2;ctx.stroke();txt(m,W/2,y+33,'bold 21px system-ui',h?'#10203a':'#fff','center');});
-  txt('Klicken oder Enter drücken · Mit Ton spielen',W/2,H-24,'14px system-ui','#9fb4d4','center');
+  txt((typeof matchMedia!=='undefined'&&matchMedia('(pointer:coarse)').matches)?'Tippen zum Starten · Mit Ton spielen':'Klicken oder Enter drücken · Mit Ton spielen',W/2,H-24,'14px system-ui','#9fb4d4','center');
 }
 /* ---- Karte ---- */
 const MAPN=[
@@ -2618,7 +3723,7 @@ function drawMap(world,hov,st,now){
     if(!ok){ctx.fillStyle='#2a3448';rr(x-9,y-3,18,14,3);ctx.fill();ctx.strokeStyle='#2a3448';ctx.lineWidth=3;ctx.beginPath();ctx.arc(x,y-4,6,Math.PI,0);ctx.stroke();}
     else if(dn){ctx.strokeStyle='#10402e';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(x-10,y);ctx.lineTo(x-3,y+8);ctx.lineTo(x+11,y-9);ctx.stroke();}
     else txt(String(k+1),x,y+8,'bold 22px system-ui','#10203a','center');
-    const lab=LDEF[li].name;ctx.font='bold 13px system-ui';const tw=ctx.measureText(lab).width+18;ctx.fillStyle='#0a1426cc';rr(x-tw/2,y+r+8,tw,22,11);ctx.fill();txt(lab,x,y+r+24,'bold 13px system-ui',ok?'#fff':'#9aa6bd','center');
+    const lab=tr(LDEF[li].name);ctx.font='bold 13px system-ui';const tw=ctx.measureText(lab).width+18;ctx.fillStyle='#0a1426cc';rr(x-tw/2,y+r+8,tw,22,11);ctx.fill();txt(lab,x,y+r+24,'bold 13px system-ui',ok?'#fff':'#9aa6bd','center');
     for(let c=0;c<3;c++)drawIcon(LDEF[li].coll,x-16+c*16,y-r-14,dn&&c<st.coll(li),now);
     if(isNext){drawMira(x-11,y-r-56+Math.sin(now*5)*3,1.1,{face:1,t:now,air:true});}
   });
@@ -2626,11 +3731,11 @@ function drawMap(world,hov,st,now){
   const reg=world>=13?4:world>=10?3:world>=7?2:world>=4?1:0,twoRows=!st.pick;
   ctx.fillStyle='#0a1426cc';ctx.fillRect(0,0,W,twoRows?96:62);
   REGION.forEach((R,k)=>{const x=16+k*126,on=k===reg,ul=k===0||st.tabsUnlocked[[0,4,7,10,13][k]];ctx.fillStyle=on&&twoRows?'#ffdc82':ul?'#26385acc':'#1a2236cc';rr(x,10,120,42,13);ctx.fill();if(hov===200+k){ctx.strokeStyle='#ffdc82';ctx.lineWidth=2;ctx.stroke();}
-    txt((ul?(k===0?'🏠 ':k===1?'🍁 ':k===2?'🕳️ ':k===3?'☁️ ':'🏜️ '):'🔒 ')+R.name,x+60,38,'bold 12px system-ui',on&&twoRows?'#10203a':ul?'#fff':'#7a869c','center');});
+    txt((ul?(k===0?'🏠 ':k===1?'🍁 ':k===2?'🕳️ ':k===3?'☁️ ':'🏜️ '):'🔒 ')+tr(R.name),x+60,38,'bold 12px system-ui',on&&twoRows?'#10203a':ul?'#fff':'#7a869c','center');});
   if(twoRows){
     const ws=REGION[reg].worlds.filter(w=>w!==0&&!(reg===0&&w===0));
     ws.forEach((w,k)=>{const x=16+k*152,on=w===world,ul=st.tabsUnlocked[w];ctx.fillStyle=on?'#ffdc82':ul?'#26385acc':'#1a2236cc';rr(x,56,144,32,10);ctx.fill();if(hov===300+w){ctx.strokeStyle='#ffdc82';ctx.lineWidth=2;ctx.stroke();}
-      txt((ul?WORLDS[w].tabIcon+' ':'🔒 ')+TABN[w],x+72,77,'bold 14px system-ui',on?'#10203a':ul?'#fff':'#7a869c','center');});
+      txt((ul?WORLDS[w].tabIcon+' ':'🔒 ')+tr(TABN[w]),x+72,77,'bold 14px system-ui',on?'#10203a':ul?'#fff':'#7a869c','center');});
     txt((world===0&&st.spring)?'Frühling in Nebelhain':WORLDS[world].sub,W-18,78,'italic 15px system-ui','#e8f0ff','right');
   }else{
     ctx.fillStyle='#0a1426dd';rr(W/2-190,H/2-34,380,68,16);ctx.fill();ctx.strokeStyle='#ffdc82';ctx.lineWidth=2;ctx.stroke();
@@ -2640,7 +3745,7 @@ function drawMap(world,hov,st,now){
   /* Info-Panel */
   const hi=(hov!=null&&hov>=0&&hov<idx.length)?idx[hov]:null;
   if(hi!=null){const D=LDEF[hi],ok=st.unlocked(hi),dn=st.done(hi);ctx.fillStyle='#0a1426ee';rr(W/2-230,H-84,460,70,14);ctx.fill();ctx.strokeStyle='#ffdc82';ctx.lineWidth=2;ctx.stroke();
-    txt('Level '+(hi+1)+' · '+D.name,W/2-212,H-56,'bold 18px system-ui','#fff','left');
+    txt('Level '+(hi+1)+' · '+tr(D.name),W/2-212,H-56,'bold 18px system-ui','#fff','left');
     txt(ok?(dn?'Geschafft – tippen zum Wiederholen':'Tippen zum Starten'):'Gesperrt – schaffe zuerst das Level davor',W/2-212,H-32,'14px system-ui','#b9c9e8','left');
     for(let d=0;d<5;d++){ctx.fillStyle=d<D.diff?'#ff8a7a':'#ffffff30';ctx.beginPath();ctx.arc(W/2+130+d*18,H-52,6,0,7);ctx.fill();}txt('Schwierigkeit',W/2+176,H-30,'12px system-ui','#9fb4d4','center');}
   else{ctx.fillStyle='#0a1426b0';rr(W/2-230,H-36,460,26,13);ctx.fill();txt('Tippe auf ein leuchtendes Level, um es zu starten  ·  Enter: nächstes Level',W/2,H-18,'13px system-ui','#e8f0ff','center');}
@@ -2772,7 +3877,7 @@ function drawCut(cs,now,hovSkip){
   const full=wrapText(text,430),lines=wrapText(typed,430);
   if(who==='narr'||pos[who]==null){
     const bw=700,bh=full.length*30+36,bx=(W-bw)/2,by=64;ctx.fillStyle='#0a1020dd';rr(bx,by,bw,bh,16);ctx.fill();ctx.strokeStyle='#ffffff55';ctx.lineWidth=2;ctx.stroke();
-    if(who!=='narr'){ctx.fillStyle=CHAR[who].col;rr(bx+18,by-14,Math.max(90,ctx.measureText(CHAR[who].name).width+34),26,13);ctx.fill();ctx.strokeStyle='#2a2438';ctx.lineWidth=2;ctx.stroke();txt(CHAR[who].name,bx+35,by+5,'bold 15px system-ui','#2a2438','left');}
+    if(who!=='narr'){ctx.fillStyle=CHAR[who].col;rr(bx+18,by-14,Math.max(90,ctx.measureText(tr(CHAR[who].name)).width+34),26,13);ctx.fill();ctx.strokeStyle='#2a2438';ctx.lineWidth=2;ctx.stroke();txt(tr(CHAR[who].name),bx+35,by+5,'bold 15px system-ui','#2a2438','left');}
     ctx.font='italic 20px system-ui';ctx.fillStyle='#f4f6ff';ctx.textAlign='center';wrapText(typed,640).forEach((l,i)=>ctx.fillText(l,W/2,by+36+i*30));
     if(!talkNow){ctx.fillStyle='#ffdc82';ctx.fillText('▼',bx+bw-26,by+bh-12+Math.sin(now*6)*3);}
   }else{
@@ -2782,7 +3887,7 @@ function drawCut(cs,now,hovSkip){
     ctx.beginPath();ctx.moveTo(ax-16,by+bh-2);ctx.lineTo(ax+4,by+bh+34);ctx.lineTo(ax+22,by+bh-2);ctx.fill();
     ctx.strokeStyle='#2a2438';ctx.lineWidth=3;rr(bx,by,bw,bh,18);ctx.stroke();
     ctx.fillStyle='#fffaf0';ctx.fillRect(ax-14,by+bh-3,34,5);
-    ctx.fillStyle=CHAR[who].col;rr(bx+16,by-14,Math.max(80,ctx.measureText(CHAR[who].name).width+34),26,13);ctx.fill();ctx.strokeStyle='#2a2438';ctx.lineWidth=2;ctx.stroke();txt(CHAR[who].name,bx+33,by+5,'bold 15px system-ui','#2a2438','left');
+    ctx.fillStyle=CHAR[who].col;rr(bx+16,by-14,Math.max(80,ctx.measureText(tr(CHAR[who].name)).width+34),26,13);ctx.fill();ctx.strokeStyle='#2a2438';ctx.lineWidth=2;ctx.stroke();txt(tr(CHAR[who].name),bx+33,by+5,'bold 15px system-ui','#2a2438','left');
     ctx.font='20px system-ui';ctx.fillStyle='#2a2438';ctx.textAlign='left';lines.forEach((l,i)=>ctx.fillText(l,bx+24,by+42+i*28));
     if(!talkNow){ctx.fillStyle='#d9506f';ctx.fillText('▼',bx+bw-34,by+bh-12+Math.sin(now*6)*3);}
   }
@@ -2944,7 +4049,7 @@ const trVisible=()=>!!save.spring||isDone(IDX('w3g'))||isDone(IDX('w0t'));
 const idxOfWorld=w=>LDEF.map((d,i)=>(d.w===w&&!(d.key==='w0t'&&!trVisible()))?i:-1).filter(i=>i>=0);
 const nextLevel=()=>{for(let i=0;i<LDEF.length;i++)if(!isDone(i))return i;return -1;};
 const hasProgress=()=>Object.keys(save.done).length>0;
-function setStatus(t){ui.status.textContent=t;statusT=3;}
+function setStatus(t){ui.status.textContent=tr(t);statusT=3;}
 function burst(x,y,color,count){for(let i=0;i<(count||9);i++){const a=Math.random()*Math.PI*2,sp=70+Math.random()*210;fx.parts.push({x,y,vx:Math.cos(a)*sp,vy:Math.sin(a)*sp,life:.35+Math.random()*.25,max:.6,color:color||'#b5f6ff',size:2+Math.random()*3});}}
 function emit(k,a,b,c,d){
   switch(k){
@@ -2952,14 +4057,14 @@ function emit(k,a,b,c,d){
     case 'wjump':sfx('wjump');burst(a,b,'#f5b2d0',7);break;
     case 'dash':sfx('dash');burst(a,b,'#9df4ff',12);break;
     case 'trail':fx.trail.push({x:a,y:b,life:.18});break;
-    case 'die':deathsLvl++;save.deaths=(save.deaths||0)+1;fx.shake=10;burst(a,b,'#ff7897',18);sfx('die');setStatus(deathsLvl>=16&&deathsLvl<=20?'Achtung: Noch '+(21-deathsLvl)+' Stürze bis Game Over!':'Nochmal! Versuch es weiter.');break;
-    case 'berry':{const k2=L.coll;sfx(k2==='note'?'note':'berry');burst(a,b,{note:'#ffe08a',pearl:'#ffd0e8',leaf:'#ffb050',drop:'#7fd0ff',lantern:'#ffd070',spark:'#8aeaff',rune:'#d0b0ff',ember:'#ff8a4a'}[k2]||'#ff6b91',14);setStatus((COLLN[k2]||COLLN.berry)[0]+' eingesammelt!');break;}
+    case 'die':deathsLvl++;save.deaths=(save.deaths||0)+1;fx.shake=10;burst(a,b,'#ff7897',18);sfx('die');setStatus(deathsLvl>=16&&deathsLvl<=20?tf('Achtung: Noch {n} Stürze bis Game Over!',{n:21-deathsLvl}):'Nochmal! Versuch es weiter.');break;
+    case 'berry':{const k2=L.coll;sfx(k2==='note'?'note':'berry');burst(a,b,{note:'#ffe08a',pearl:'#ffd0e8',leaf:'#ffb050',drop:'#7fd0ff',lantern:'#ffd070',spark:'#8aeaff',rune:'#d0b0ff',ember:'#ff8a4a'}[k2]||'#ff6b91',14);setStatus(tf('{c} eingesammelt!',{c:tr((COLLN[k2]||COLLN.berry)[0])}));break;}
     case 'cp':sfx('cp');burst(a+10,b-35,'#7be0b0',12);setStatus('Checkpoint aktiviert!');break;
     case 'spring':sfx('spring');burst(a,b,'#ffe08a',8);break;
     case 'crystal':sfx('crystal');burst(a,b,'#9df4ff',10);break;
     case 'crumble':sfx('crumble');burst(a,b,'#d9c3a3',10);break;
     case 'beat':if(Math.abs(a-(S?S.p.x:0))<700)sfx('beat',a);break;
-    case 'gate':sfx('gate');setStatus('Das Tor bleibt zu: Sammle zuerst alle '+(COLLN[L.coll]||COLLN.berry)[2]+'!');break;
+    case 'gate':sfx('gate');setStatus(tf('Das Tor bleibt zu: Sammle zuerst alle {c}!',{c:tr((COLLN[L.coll]||COLLN.berry)[2])}));break;
     case 'warp':sfx('warp');burst(a,b,'#b58cff',16);burst(c,d-20,'#d0b8ff',16);break;
     case 'warn':sfx('warn');break;
     case 'splash':sfx('splash');burst(a,b,'#bfeaff',14);break;
@@ -2982,7 +4087,7 @@ function goMap(w){
   chainT=(w===0&&save.spring&&!save.act2&&!save.callSeen)?3.6:0;
   stopSpeak();mapPick=false;mode='map';world=w;paused=false;cs=null;hov=null;
   startMusic(w===0&&save.spring?'spring':WORLDS[w].mus);setAmb(w===0&&save.spring?'spring':['village','wind','sky','core','leaves','fog','shadow','abyss','blackwater','silence','cloudy','tempest','gale','desert','oasis','sandstorm'][w]);setSound(AU.on);
-  ui.lvl.textContent='Weltkarte · '+WORLDS[w].name;ui.collL.textContent='Fortschritt';
+  ui.lvl.textContent=tr('Weltkarte')+' · '+tr(WORLDS[w].name);ui.collL.textContent=tr('Fortschritt');
   ui.coll.textContent=idxOfWorld(w).filter(isDone).length+' / '+idxOfWorld(w).length;ui.dash.textContent='–';ui.cp.textContent='–';ui.deaths.textContent=save.deaths||0;
   setStatus('Wähle ein Level.');
 }
@@ -2998,7 +4103,7 @@ function klangOf(def){
   return .5;
 }
 function playAnim(kind,after,p0){
-  stopSpeak();mode='anim';anim={kind,t:0,after,p0,m:0,th:0};cs=null;if(kind==='skyfall'){cutMusic();setAmb('skyrush');}else{startMusic(kind==='fall'?'abyssfall':'riseanim');setAmb('none');}setKlang(null);ui.lvl.textContent=kind==='rise'?'Der Aufstieg':'Der Sturz';
+  stopSpeak();mode='anim';anim={kind,t:0,after,p0,m:0,th:0};cs=null;if(kind==='skyfall'){cutMusic();setAmb('skyrush');}else{startMusic(kind==='fall'?'abyssfall':'riseanim');setAmb('none');}setKlang(null);ui.lvl.textContent=tr(kind==='rise'?'Der Aufstieg':'Der Sturz');
 }
 function animEnd(){if(mode!=='anim'||!anim)return;const a=anim.after;anim=null;mode='map';a();}
 function startFall(){
@@ -3030,8 +4135,8 @@ function beginLevel(i){
   cam.x=clamp(S.p.x-W*(L.dir===-1?.62:.38),0,Math.max(0,L.W-W));cam.lead=L.dir===-1?.62:.38;cam.y=clamp(S.p.y-H*.55,0,Math.max(0,L.H-H));
   mode='play';paused=false;deathsLvl=0;winT=0;acc=0;world=L.w;
   curBlend=L.blend?L.blend.a.mus:null;startMusic((L.chasers&&MUS[L.theme.mus+'c'])?L.theme.mus+'c':L.theme.mus);setAmb(L.theme.amb);
-  ui.lvl.textContent=(i+1)+' / '+LDEF.length+' · '+L.name;ui.collL.textContent=(COLLN[L.coll]||COLLN.berry)[1];
-  setStatus(L.gated?'Sammle alle '+(COLLN[L.coll]||COLLN.berry)[2]+', dann öffnet sich das Tor!':L.chasers?'Etwas folgt dir … lauf!':'Erreiche das Ziel!');
+  ui.lvl.textContent=(i+1)+' / '+LDEF.length+' · '+tr(L.name);ui.collL.textContent=tr((COLLN[L.coll]||COLLN.berry)[1]);
+  setStatus(L.gated?tf('Sammle alle {c}, dann öffnet sich das Tor!',{c:tr((COLLN[L.coll]||COLLN.berry)[2])}):L.chasers?'Etwas folgt dir … lauf!':'Erreiche das Ziel!');
 }
 function onWin(){
   const D=LDEF[cur],first=!isDone(cur),got=S.tk.filter(Boolean).length;firstClear=first;
@@ -3047,7 +4152,7 @@ function afterLevel(){
   if(D.key==='w9g'&&firstClear){goMap(9);playCut(STORY.ending3,()=>startRise());return;}
   if(cur===LDEF.length-1&&firstClear){goMap(15);playCut(STORY.ending5,()=>{goMap(15);banner={text:'Die Wüste gehört dir',sub:'Danke fürs Spielen – alle Level kannst du jederzeit erneut besuchen.',t:8};});return;}
   if(lastOfWorld&&D.w===3&&firstClear){goMap(3);playCut(STORY.ending,()=>{save.spring=true;writeSave();goMap(0);banner={text:'Frühling in Nebelhain',sub:'Der Schnee ist geschmolzen …',t:3.4};});return;}
-  if(lastOfWorld&&D.w<15&&D.w!==3&&D.w!==6&&D.w!==9&&D.w!==12&&firstClear){goMap(D.w+1);banner={text:'Neue Welt: '+WORLDS[D.w+1].name,sub:WORLDS[D.w+1].sub,t:4.5};sfx('portal');}
+  if(lastOfWorld&&D.w<15&&D.w!==3&&D.w!==6&&D.w!==9&&D.w!==12&&firstClear){goMap(D.w+1);banner={text:tf('Neue Welt: {w}',{w:tr(WORLDS[D.w+1].name)}),sub:WORLDS[D.w+1].sub,t:4.5};sfx('portal');}
   else goMap(D.w);
 }
 /* ---- Namenseingabe & Game Over ---- */
@@ -3075,11 +4180,11 @@ function titleAction(k){
 let askNew=false;
 function confirmNew(){if(askNew){askNew=false;return true;}askNew=true;setStatus('Nochmal klicken: Fortschritt wird gelöscht.');return false;}
 const titleMenu=()=>hasProgress()?['Weiter','Neues Spiel']:['Neues Spiel'];
-function toTitle(){mode='title';stopSpeak();startMusic('title');setAmb('wind');ui.lvl.textContent='Titel';}
+function toTitle(){mode='title';stopSpeak();startMusic('title');setAmb('wind');ui.lvl.textContent=tr('Titel');}
 /* ---- Cutscene-Galerie ---- */
 let cg={tab:0,rows:[]},cgHov=null;
 const SPECIAL=[['intro','Der Anfang','Die Geschichte beginnt',()=>true],['arrive','Ankunft in Laubenau',null,()=>!!save.act2],['journey','Die Reise',null,()=>!!save.spring],['spring1','Der Frühling',null,()=>!!save.spring],['ending','Das Ende im Nebelhain',null,()=>!!save.spring],['ending2','Die Bruchstelle',null,()=>!!save.act3],['fall1','Der Sturz (Szene)',null,()=>!!save.act3],['fall2','Das Erwachen in der Tiefe',null,()=>!!save.act3],['ending3','Das Ende der Tiefe',null,()=>!!save.act4],['skyarrive','Ankunft im Wolkenreich',null,()=>!!save.act4],['desertfind','Gerettet in der Wüste',null,()=>!!save.act5],['ending5','Das große Finale',null,()=>isDone(LDEF.length-1)]];
-function openCuts(tab){mode='cuts';cg.tab=tab||0;stopSpeak();cs=null;hov=null;startMusic('title');setAmb('none');ui.lvl.textContent='Cutscenes';buildCutRows();}
+function openCuts(tab){mode='cuts';cg.tab=tab||0;stopSpeak();cs=null;hov=null;startMusic('title');setAmb('none');ui.lvl.textContent=tr('Cutscenes');buildCutRows();}
 function cutsTab(t){cg.tab=Math.max(0,Math.min(16,t));buildCutRows();}
 function buildCutRows(){
   const rows=[];
@@ -3106,10 +4211,10 @@ function cutsClick(h){if(h){sfx('ui');h.run();}}
 function drawCuts(){
   const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#16213a');g.addColorStop(1,'#0c1222');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
   for(let t=0;t<17;t++){const on=t===cg.tab,ico=t===0?'★':(WORLDS[t-1].tabIcon||''),hv=cgHov==='t'+t;ctx.fillStyle=on?'#ffdc82':hv?'#34486f':'#22304f';rr(6+t*56,8,52,36,10);ctx.fill();txt(ico,32+t*56,33,'18px system-ui',on?'#10203a':'#fff','center');}
-  txt(cg.tab===0?'Besondere Szenen':WORLDS[cg.tab-1].name+' · '+WORLDS[cg.tab-1].sub,24,64,'bold 15px system-ui','#9fb4d8');
+  txt(cg.tab===0?'Besondere Szenen':tr(WORLDS[cg.tab-1].name)+' · '+tr(WORLDS[cg.tab-1].sub),24,64,'bold 15px system-ui','#9fb4d8');
   if(!cg.rows.length)txt('Hier gibt es noch nichts zu sehen. Spiele die Level, um ihre Szenen freizuschalten.',W/2,H/2,'16px system-ui','#9fb4d8','center');
   cg.rows.forEach((r,i)=>{const ry=84+i*29;ctx.fillStyle=r.locked?'#141c30':'#1d2a46';rr(16,ry,W-32,26,8);ctx.fill();txt((r.locked?'🔒 ':'')+r.label,32,ry+18,'15px system-ui',r.locked?'#5f6c88':'#e8f0ff');
-    r.btns.forEach((b,k)=>{const bx=W-250+k*120,hv=cgHov===r.id+'b'+k;ctx.fillStyle=hv?'#ffdc82':'#3a5a8c';rr(bx,ry+2,110,22,7);ctx.fill();txt('▶ '+b[0],bx+55,ry+17,'bold 13px system-ui',hv?'#10203a':'#fff','center');});});
+    r.btns.forEach((b,k)=>{const bx=W-250+k*120,hv=cgHov===r.id+'b'+k;ctx.fillStyle=hv?'#ffdc82':'#3a5a8c';rr(bx,ry+2,110,22,7);ctx.fill();txt('▶ '+tr(b[0]),bx+55,ry+17,'bold 13px system-ui',hv?'#10203a':'#fff','center');});});
   ctx.fillStyle=cgHov==='back'?'#ffdc82':'#3a5a8c';rr(W-190,48,170,30,10);ctx.fill();txt('← Zurück zur Karte',W-105,68,'bold 14px system-ui',cgHov==='back'?'#10203a':'#fff','center');
 }
 /* ---- Eingaben ---- */
@@ -3167,7 +4272,7 @@ function onKeyDown(e){
   }
 }
 function onKeyUp(e){keys[e.code]=false;}
-function toggleSound(){setSound(!AU.on);$('sound').textContent=AU.on?'🔊 Ton':'🔇 Ton';if(AU.on)sfx('ui');}
+function toggleSound(){setSound(!AU.on);refreshBtns();if(AU.on)sfx('ui');}
 window.addEventListener('keydown',onKeyDown);window.addEventListener('keyup',onKeyUp);
 canvas.addEventListener('pointerdown',e=>{
   au();const [x,y]=mapToCanvas(e);
@@ -3189,16 +4294,55 @@ canvas.addEventListener('pointermove',e=>{
 if(document.createElement)DRESS.forEach(d=>{const b=document.createElement('button');b.type='button';b.className='sw';b.dataset.c=d.c;b.title=d.n;b.setAttribute('aria-label',d.n);b.style.background=d.c;b.addEventListener('click',()=>{au();pickDress(d.c);});$('dressRow').appendChild(b);});
 $('nameGo').addEventListener('click',()=>{au();nameDone();});
 $('sound').addEventListener('click',()=>{au();toggleSound();});
-$('music').addEventListener('click',()=>{au();setMusic(!AU.music);$('music').textContent=AU.music?'🎵 Musik':'🚫 Musik';});
+$('music').addEventListener('click',()=>{au();setMusic(!AU.music);refreshBtns();});
 $('cutbtn').addEventListener('click',()=>{au();openCuts(0);});
-$('voice').addEventListener('click',()=>{au();AU.voice=!AU.voice;if(!AU.voice)stopSpeak();$('voice').textContent=AU.voice?'🗣️ Stimme':'🤐 Stimme';});
+$('voice').addEventListener('click',()=>{au();AU.voice=!AU.voice;if(!AU.voice)stopSpeak();refreshBtns();});
 $('mapbtn').addEventListener('click',()=>{au();if(mode==='play'){goMap(L.w);mapPick=true;}});
 $('restart').addEventListener('click',()=>{au();if(mode==='play'){beginLevel(cur);setStatus('Level neu gestartet.');}});
-document.querySelectorAll('.touch button').forEach(btn=>{
-  const code=btn.dataset.key;
-  btn.addEventListener('pointerdown',e=>{e.preventDefault();au();keys[code]=true;if(mode==='play'&&winT<=0){if(code==='Space')pend.jump=true;if(code==='Shift')pend.dash=true;}});
-  ['pointerup','pointerleave','pointercancel'].forEach(ev=>btn.addEventListener(ev,()=>keys[code]=false));
-});
+/* ---- Touch-Steuerung (Handy, Querformat) ---- */
+{const act=new Map(),held=new Set(),tb=[...document.querySelectorAll('#touch button')];
+  const press=c=>{if(!keys[c]){keys[c]=true;held.add(c);if(mode==='play'&&winT<=0){if(c==='Space')pend.jump=true;if(c==='Shift')pend.dash=true;}}};
+  const rel=c=>{if(held.has(c)){keys[c]=false;held.delete(c);}};
+  const sync=()=>{const on=new Set(act.values());tb.forEach(b=>{const c=b.dataset.key;if(b.classList)b.classList.toggle('on',on.has(c));if(on.has(c))press(c);else rel(c);});};
+  const at=(x,y)=>{const els=document.elementsFromPoint?document.elementsFromPoint(x,y):[];const e=els.find(q=>q.dataset&&q.dataset.key&&q.closest&&q.closest('#touch'));return e?e.dataset.key:null;};
+  const root=$('touch');
+  if(root&&root.addEventListener){
+    root.addEventListener('pointerdown',e=>{e.preventDefault();au();const c=at(e.clientX,e.clientY);if(c){act.set(e.pointerId,c);try{e.target.setPointerCapture(e.pointerId);}catch(_){}sync();}});
+    root.addEventListener('pointermove',e=>{if(!act.has(e.pointerId))return;const c=at(e.clientX,e.clientY);if(c)act.set(e.pointerId,c);else act.delete(e.pointerId);sync();});
+    ['pointerup','pointercancel'].forEach(ev=>root.addEventListener(ev,e=>{act.delete(e.pointerId);sync();}));
+    root.addEventListener('contextmenu',e=>e.preventDefault());
+  }
+}
+const HT={
+  KEYS:{de:'<strong>Steuerung</strong><br>A / D oder ← / → bewegen · Leertaste / W / ↑ springen (an Wänden: Wandsprung)<br>Shift / X dashen (8 Richtungen) · Esc Pause · R Neustart · K Karte · M Ton an/aus',
+        en:'<strong>Controls</strong><br>A / D or ← / → move · Space / W / ↑ jump (on walls: wall jump)<br>Shift / X dash (8 directions) · Esc pause · R restart · K map · M sound on/off'},
+  NOTE:{de:'Tipp: Kurz nach dem Verlassen einer Kante kannst du noch springen. Der Dash lädt sich am Boden oder an einer Wand wieder auf. Brüchige Plattformen fallen kurz nach dem Betreten, Federn schleudern dich hoch, Kristalle laden den Dash in der Luft auf, Aufwind trägt dich nach oben. Wer in einem Level mehr als 20 Mal stürzt, sieht das Game Over und beginnt das Level neu. Die Sprachausgabe nutzt die Stimme deines Browsers und lässt sich mit „Stimme“ ein- und ausschalten. Dein Fortschritt wird automatisch gespeichert.',
+        en:'Tip: You can still jump for a moment after leaving a ledge. The dash recharges on the ground or on a wall. Crumbling platforms fall shortly after you step on them, springs fling you upwards, crystals recharge your dash in mid-air, and updrafts carry you up. If you fall more than 20 times in one level, you see Game Over and restart the level. The voice uses your browser’s speech voice and can be switched on and off with “Voice”. Your progress is saved automatically.'}
+};
+{const mb=$('menubtn'),bs=$('menubtn')&&$('menubtn').parentNode;if(mb&&bs&&bs.classList){mb.addEventListener('click',()=>bs.classList.toggle('open'));document.querySelectorAll('.btns button').forEach(b=>{if(b.id!=='menubtn')b.addEventListener('click',()=>bs.classList.remove('open'));});}}
+function setBtn(id,ic,lb){const b=$(id);if(b)b.innerHTML='<span class="ic">'+ic+'</span><span class="lbl">'+tr(lb)+'</span>';}
+function refreshBtns(){
+  setBtn('sound',AU.on?'🔊':'🔇','Ton');setBtn('music',AU.music?'🎵':'🚫','Musik');setBtn('voice',AU.voice?'🗣️':'🤐','Stimme');
+  setBtn('mapbtn','🗺️','Karte');setBtn('cutbtn','🎬','Cutscenes');setBtn('restart','↻','Neustart');setBtn('pausebtn','⏸','Pause');setBtn('fsbtn','⛶','Vollbild');
+  const lb=$('langbtn');if(lb)lb.innerHTML='<span class="ic">🌐</span><span class="lbl">'+(LANG==='de'?'English':'Deutsch')+'</span>';
+}
+function refreshHudText(){
+  if(mode==='title'||mode==='name'){ui.lvl.textContent=tr('Titel');ui.collL.textContent=tr('🍓 Beeren');}
+  else if(mode==='map'){ui.lvl.textContent=tr('Weltkarte')+' · '+tr(WORLDS[world].name);ui.collL.textContent=tr('Fortschritt');}
+  else if(mode==='play'&&L){ui.lvl.textContent=(cur+1)+' / '+LDEF.length+' · '+tr(L.name);ui.collL.textContent=tr((COLLN[L.coll]||COLLN.berry)[1]);}
+  else if(mode==='cuts'){ui.lvl.textContent=tr('Cutscenes');buildCutRows();}
+}
+function applyLang(){
+  try{document.documentElement.lang=LANG;}catch(e){}
+  document.querySelectorAll('[data-t]').forEach(el=>{const k=el.dataset.t;el.innerHTML=HT[k]?HT[k][LANG]:tr(k);});
+  const ni=$('nameIn');if(ni)ni.placeholder='Mira';
+  refreshBtns();loadVoices();refreshHudText();
+}
+{const lb=$('langbtn');if(lb)lb.addEventListener('click',()=>{au();LANG=LANG==='de'?'en':'de';try{localStorage.setItem('sotm_lang',LANG);}catch(e){}stopSpeak();applyLang();if(mode==='cut'&&cs)cutLine();});}
+$('pausebtn').addEventListener('click',()=>{au();if(mode==='play'&&winT<=0)paused=!paused;});
+{const fb=$('fsbtn'),de=document.documentElement;
+  if(fb&&de&&de.requestFullscreen&&typeof matchMedia!=='undefined'&&matchMedia('(pointer:coarse)').matches)fb.hidden=false;
+  if(fb&&fb.addEventListener)fb.addEventListener('click',()=>{try{if(document.fullscreenElement)document.exitFullscreen();else{const p=de.requestFullscreen();if(p&&p.catch)p.catch(()=>{});try{const o=screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape');if(o&&o.catch)o.catch(()=>{});}catch(e){}}}catch(e){}});}
 /* ---- Schleife ---- */
 function stepOnce(){
   const inp={l:!!(keys.ArrowLeft||keys.KeyA),r:!!(keys.ArrowRight||keys.KeyD),u:!!(keys.ArrowUp||keys.KeyW||keys.Space),d:!!(keys.ArrowDown||keys.KeyS),jump:pend.jump,dash:pend.dash};
@@ -3210,7 +4354,7 @@ function stepOnce(){
 }
 function updateHud(){
   if(mode!=='play'||!S)return;
-  const n=S.tk.filter(Boolean).length;ui.coll.textContent=n+' / '+L.berries.length;ui.dash.textContent=S.p.dr?'bereit':'leer';ui.cp.textContent=L.cps[S.cp][2];ui.deaths.textContent=deathsLvl+' / 20';
+  const n=S.tk.filter(Boolean).length;ui.coll.textContent=n+' / '+L.berries.length;ui.dash.textContent=tr(S.p.dr?'bereit':'leer');ui.cp.textContent=tr(L.cps[S.cp][2]);ui.deaths.textContent=deathsLvl+' / 20';
 }
 function frame(t){
   const dt=Math.min(.1,(t-last)/1000||0);last=t;now+=dt;
@@ -3238,6 +4382,7 @@ function frame(t){
   if(mode==='cut'){
     if(cs){cs.t+=dt;const tl=nm(cs.def.lines[cs.i][1]);if(cs.chars<tl.length)cs.chars=Math.min(tl.length,cs.chars+dt*38);}
   }
+  if(document.body&&document.body.dataset&&document.body.dataset.mode!==mode)document.body.dataset.mode=mode;
   /* zeichnen */
   if(mode==='title')drawTitle(now,titleMenu(),hov!=null?hov:menuSel);
   else if(mode==='name')drawTitle(now,[],-1);
@@ -3259,9 +4404,9 @@ function frame(t){
   requestAnimationFrame(frame);
 }
 AU.onThunder=()=>{fx.flash=.9;};
-loadSave();
+loadSave();applyLang();setStatus('Klicke auf „Neues Spiel“.');
 window.__sotm={playAnim,setAnimT(t){if(anim)anim.t=t;},LDEF,LEVELS,save,get mode(){return mode;},goMap,beginLevel,playCut,STORY,titleAction,emit,newState,step,L:()=>L,S:()=>S,unlockAll(){LDEF.forEach(d=>save.done[d.key]=true);save.spring=true;save.act2=true;save.act3=true;save.act4=true;save.act5=true;},openCuts,get mapPick(){return mapPick;},set mapPick(v){mapPick=v;},pickDress,get save2(){return save;},nameDone,openName,startOver,startAct2,get chainT(){return chainT;},afterLevel,setCur(i){cur=i;},PLAYER};
-mode='title';ui.lvl.textContent='Titel';
+mode='title';ui.lvl.textContent=tr('Titel');
 requestAnimationFrame(frame);
 canvas.addEventListener('pointerdown',()=>{if(mode==='title'&&!AU.cur){au();startMusic('title');setAmb('wind');}},{once:false});
 window.addEventListener('keydown',()=>{if(mode==='title'&&!AU.cur){au();startMusic('title');setAmb('wind');}});

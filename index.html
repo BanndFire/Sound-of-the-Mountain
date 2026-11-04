@@ -583,7 +583,7 @@ function gen(cfg){
     else B.flat(lerp(70,130,r()));
     if(metric()>=nextCp){B.flat(60,{cp:labels[Math.min(li,labels.length-1)]});li++;nextCp+=cfg.cpEvery||1400;}
   }
-  if(cfg.finaleRun){B.flat(260);const xs=B.x,D=2450;for(let c=170;c<D-110;c+=lerp(cfg.finSp?cfg.finSp[0]:165,cfg.finSp?cfg.finSp[1]:190,r()))B.crystal(c,62);B.gap(D);B.o.finale={x0:xs,x1:xs+D};}
+  if(cfg.finaleRun){B.flat(260);const xs=B.x,N=7;let c=170;const cr=[];for(let k=0;k<N;k++){cr.push(c);c+=lerp(165,190,r());}const D=Math.round(cr[N-1]+190);cr.forEach(v=>B.crystal(v,62));B.gap(D);B.o.finale={x0:xs,x1:xs+D};}
   B.flat(cfg.endLen||300);
   const o=B.o;
   o.goal=[B.x-180,B.y-70];o.W=B.x;

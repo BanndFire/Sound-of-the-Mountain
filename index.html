@@ -30,11 +30,17 @@
   button:hover { background:var(--btn2); }
   button .ic{margin-right:5px}
   .mb{display:none}
+  .quick,.more{display:contents}
   .touch { display:none; }
   #rotate{display:none}
   html,body{overscroll-behavior:none;-webkit-tap-highlight-color:transparent}
   .touch button,.btns button{user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;touch-action:none}
   @media (pointer:coarse) {
+    .touch{display:flex;justify-content:space-between;gap:12px;margin-top:12px}
+    .pad{display:flex;gap:8px;align-items:center}
+    .touch button{min-width:58px;min-height:50px;font-size:20px;touch-action:none}
+  }
+  @media (pointer:coarse) and (max-height:500px) and (orientation:landscape) {
     .touch{display:block;position:fixed;inset:0;pointer-events:none;z-index:15}
     .pad{position:absolute;bottom:calc(14px + env(safe-area-inset-bottom));display:flex;align-items:flex-end;gap:10px}
     .pl{left:calc(16px + env(safe-area-inset-left))}.pr{right:calc(16px + env(safe-area-inset-right))}
@@ -44,16 +50,19 @@
     .touch button.dash{margin-bottom:40px;background:#6a3fa8}
     .touch button.on{opacity:.95;background:#ffdc82;color:#10203a}
   }
-  @media (pointer:coarse) and (orientation:landscape) {
+  @media (pointer:coarse) and (max-height:500px) and (orientation:landscape) {
     html,body{height:100%;overflow:hidden}
     body{display:block;min-height:0;height:100vh;height:100dvh;background:#05080f}
     .wrap{width:100vw;height:100vh;height:100dvh;padding:0;display:flex;align-items:center;justify-content:center}
     header{display:contents}.ttl,.keys,.note{display:none}
     .btns{position:fixed;top:calc(6px + env(safe-area-inset-top));right:calc(8px + env(safe-area-inset-right));z-index:20;flex-direction:column;align-items:flex-end;flex-wrap:nowrap;gap:5px}
-    .btns button{padding:5px 10px;font-size:15px;background:#10192acc;border-radius:9px;display:none}
-    .btns button.mb,.btns.open button{display:block}
-    .btns.open .lbl{display:inline;font-size:13px}.btns button .ic{margin:0 6px 0 0}.btns button.mb{margin:0;order:-1}
-    .btns.open button{text-align:left;min-width:120px}
+    .quick{display:flex;gap:5px}.more{display:none;flex-direction:column;gap:5px;align-items:stretch}
+    .btns.open .more{display:flex}
+    .btns button{padding:5px 10px;font-size:15px;background:#10192acc;border-radius:9px}
+    .btns button.mb{display:block;margin:0}
+    .btns .lbl{display:none}.btns .ic{margin:0}
+    .btns.open .more .lbl{display:inline;font-size:13px}.btns.open .more .ic{margin:0 6px 0 0}
+    .btns.open .more button{text-align:left;min-width:120px}
     body:not([data-mode=play]) .hud{display:none}
     .gamebox{border:0;border-radius:0;box-shadow:none;width:min(100vw,calc(100vh*16/9));width:min(100vw,calc(100dvh*16/9))}
     .hud{position:absolute;left:6px;top:6px;right:auto;padding:3px 9px;border-radius:9px;background:#0b1424b0;font-size:11px;gap:10px;flex-wrap:nowrap;pointer-events:none;width:auto}
@@ -64,7 +73,7 @@
     #namebox input{font-size:15px;padding:5px;margin-bottom:6px}#dressRow{margin-bottom:8px;gap:4px}#dressRow .sw{width:24px;height:24px}
     #namebox button{font-size:14px;padding:6px 16px}
   }
-  @media (pointer:coarse) and (orientation:portrait) {
+  @media (pointer:coarse) and (max-width:500px) and (orientation:portrait) {
     #rotate{display:flex;position:fixed;inset:0;z-index:50;background:#0a1220;align-items:center;justify-content:center;text-align:center;color:#f4f6ff;font-size:18px;padding:30px}
     #rotate .ico{font-size:64px;margin-bottom:10px}
   }
@@ -86,7 +95,7 @@
 <div class="wrap">
   <header>
     <div class="ttl"><h1>SOUND OF THE MOUNTAIN</h1><div class="tag" data-t="Mira und der Klang des stummen Berges">Mira und der Klang des stummen Berges</div></div>
-    <div class="btns"><button id="sound"></button><button id="music"></button><button id="voice"></button><button id="mapbtn"></button><button id="cutbtn"></button><button id="restart"></button><button id="pausebtn"></button><button id="langbtn"></button><button id="menubtn" class="mb">☰</button><button id="fsbtn" hidden></button></div>
+    <div class="btns"><div class="quick"><button id="homebtn"></button><button id="mapbtn"></button><button id="menubtn" class="mb">☰</button></div><div class="more"><button id="sound"></button><button id="music"></button><button id="voice"></button><button id="cutbtn"></button><button id="restart"></button><button id="pausebtn"></button><button id="langbtn"></button><button id="fsbtn" hidden></button></div></div>
   </header>
   <div class="gamebox">
     <div id="namebox" hidden><div class="card"><h2 data-t="Wie heißt du?">Wie heißt du?</h2><p data-t="Gib deiner Figur einen Namen. Er erscheint in den Geschichten. Leer lassen: Mira.">Gib deiner Figur einen Namen. Er erscheint in den Geschichten. Leer lassen: Mira.</p><input id="nameIn" maxlength="14" placeholder="Mira" autocomplete="off" autocapitalize="words" spellcheck="false"><p class="sub" data-t="Farbe des Kleides">Farbe des Kleides</p><div id="dressRow"></div><button id="nameGo" data-t="Los geht's ▸">Los geht's ▸</button></div></div>
@@ -371,7 +380,7 @@ Object.assign(EN,{
 '⛰️ Level:':'⛰️ Level:','↻ Stürze:':'↻ Falls:','Klicke auf „Neues Spiel“.':'Click “New Game”.',
 'Wie heißt du?':'What’s your name?','Gib deiner Figur einen Namen. Er erscheint in den Geschichten. Leer lassen: Mira.':'Give your character a name. It appears in the stories. Leave empty: Mira.',
 'Farbe des Kleides':'Dress color','Los geht\'s ▸':'Let’s go ▸','Bitte halte dein Gerät quer.':'Please hold your device in landscape.',
-'Berg':'Mountain','Herz':'Heart','Wald':'Forest','Tal':'Valley','Fall':'Fall','Wasser':'Water','Stille':'Silence','Wolken':'Clouds','Sturm':'Storm','Dünen':'Dunes','Oase':'Oasis','bereit':'ready','leer':'empty','Tippen zum Starten · Mit Ton spielen':'Tap to start · Best played with sound','Der Pfeifer':'The Piper','Eine ferne Stimme':'A distant voice'
+'Berg':'Mountain','Herz':'Heart','Wald':'Forest','Tal':'Valley','Fall':'Fall','Wasser':'Water','Stille':'Silence','Wolken':'Clouds','Sturm':'Storm','Dünen':'Dunes','Oase':'Oasis','bereit':'ready','leer':'empty','Tippen zum Starten · Mit Ton spielen':'Tap to start · Best played with sound','Name ändern':'Change name','Titelseite':'Home','Der Pfeifer':'The Piper','Eine ferne Stimme':'A distant voice'
 });
 
 /* Daten EN (generiert) */
@@ -4158,11 +4167,13 @@ function afterLevel(){
 /* ---- Namenseingabe & Game Over ---- */
 function pickDress(hex){selDress=hex;setDress(hex);document.querySelectorAll('#dressRow .sw').forEach(b=>b.classList.toggle('on',b.dataset.c===hex));}
 function openName(){mode='name';stopSpeak();const b=$('namebox'),i=$('nameIn');b.hidden=false;i.value=(save.name&&save.name!=='Mira')?save.name:'';pickDress(save.dress||'#7d1f38');setTimeout(()=>{try{i.focus();}catch(e){}},60);}
+let nameEdit=false;
 function nameDone(){
   const v=$('nameIn').value.replace(/\s+/g,' ').trim().slice(0,14);$('namebox').hidden=true;try{$('nameIn').blur();}catch(e){}
+  if(nameEdit){nameEdit=false;PLAYER.name=v||'Mira';save.name=PLAYER.name;save.dress=selDress;setDress(selDress);writeSave();toTitle();return;}
   PLAYER.name=v||'Mira';save={done:{},coll:{},deaths:0,name:PLAYER.name,dress:selDress};writeSave();playCut(STORY.intro,()=>goMap(0));
 }
-function nameCancel(){setDress(save.dress);$('namebox').hidden=true;try{$('nameIn').blur();}catch(e){}toTitle();}
+function nameCancel(){nameEdit=false;setDress(save.dress);$('namebox').hidden=true;try{$('nameIn').blur();}catch(e){}toTitle();}
 function startOver(){mode='over';overT=0;hov=null;stopSpeak();setAmb('none');startMusic('gameover');setTimeout(()=>{if(mode==='over')sfx('crack');},goHitTime(430)*1000);setStatus('Game Over – die Glocke ist zerbrochen.');}
 function overHit(x,y){if(y>H-104&&y<H-54){if(x>W/2-300&&x<W/2-40)return 0;if(x>W/2+40&&x<W/2+300)return 1;}return null;}
 function overAction(k){sfx('ui');if(k===1)goMap(L.w);else{beginLevel(cur);setStatus('Neuer Versuch – von vorn!');}}
@@ -4175,11 +4186,12 @@ function titleAction(k){
   au();sfx('ui');
   const items=titleMenu();const it=items[k];
   if(it==='Weiter'){const n=nextLevel();goMap(n<0?6:LDEF[n].w);}
-  else{if(hasProgress()&&!confirmNew())return;newGame();}
+  else if(it==='Name ändern'){nameEdit=true;openName();}
+  else{if(hasProgress()&&!confirmNew())return;nameEdit=false;newGame();}
 }
 let askNew=false;
 function confirmNew(){if(askNew){askNew=false;return true;}askNew=true;setStatus('Nochmal klicken: Fortschritt wird gelöscht.');return false;}
-const titleMenu=()=>hasProgress()?['Weiter','Neues Spiel']:['Neues Spiel'];
+const titleMenu=()=>hasProgress()?['Weiter','Neues Spiel','Name ändern']:['Neues Spiel','Name ändern'];
 function toTitle(){mode='title';stopSpeak();startMusic('title');setAmb('wind');ui.lvl.textContent=tr('Titel');}
 /* ---- Cutscene-Galerie ---- */
 let cg={tab:0,rows:[]},cgHov=null;
@@ -4297,7 +4309,7 @@ $('sound').addEventListener('click',()=>{au();toggleSound();});
 $('music').addEventListener('click',()=>{au();setMusic(!AU.music);refreshBtns();});
 $('cutbtn').addEventListener('click',()=>{au();openCuts(0);});
 $('voice').addEventListener('click',()=>{au();AU.voice=!AU.voice;if(!AU.voice)stopSpeak();refreshBtns();});
-$('mapbtn').addEventListener('click',()=>{au();if(mode==='play'){goMap(L.w);mapPick=true;}});
+$('mapbtn').addEventListener('click',()=>{au();if(mode==='play'){goMap(L.w);mapPick=true;}else if(mode!=='name'&&hasProgress()){stopSpeak();cs=null;anim=null;paused=false;goMap(world);}});
 $('restart').addEventListener('click',()=>{au();if(mode==='play'){beginLevel(cur);setStatus('Level neu gestartet.');}});
 /* ---- Touch-Steuerung (Handy, Querformat) ---- */
 {const act=new Map(),held=new Set(),tb=[...document.querySelectorAll('#touch button')];
@@ -4323,7 +4335,7 @@ const HT={
 function setBtn(id,ic,lb){const b=$(id);if(b)b.innerHTML='<span class="ic">'+ic+'</span><span class="lbl">'+tr(lb)+'</span>';}
 function refreshBtns(){
   setBtn('sound',AU.on?'🔊':'🔇','Ton');setBtn('music',AU.music?'🎵':'🚫','Musik');setBtn('voice',AU.voice?'🗣️':'🤐','Stimme');
-  setBtn('mapbtn','🗺️','Karte');setBtn('cutbtn','🎬','Cutscenes');setBtn('restart','↻','Neustart');setBtn('pausebtn','⏸','Pause');setBtn('fsbtn','⛶','Vollbild');
+  setBtn('homebtn','🏠','Titelseite');setBtn('mapbtn','🗺️','Karte');setBtn('cutbtn','🎬','Cutscenes');setBtn('restart','↻','Neustart');setBtn('pausebtn','⏸','Pause');setBtn('fsbtn','⛶','Vollbild');
   const lb=$('langbtn');if(lb)lb.innerHTML='<span class="ic">🌐</span><span class="lbl">'+(LANG==='de'?'English':'Deutsch')+'</span>';
 }
 function refreshHudText(){
@@ -4339,6 +4351,7 @@ function applyLang(){
   refreshBtns();loadVoices();refreshHudText();
 }
 {const lb=$('langbtn');if(lb)lb.addEventListener('click',()=>{au();LANG=LANG==='de'?'en':'de';try{localStorage.setItem('sotm_lang',LANG);}catch(e){}stopSpeak();applyLang();if(mode==='cut'&&cs)cutLine();});}
+$('homebtn').addEventListener('click',()=>{au();paused=false;winT=0;cs=null;anim=null;stopSpeak();if(mode==='name')nameCancel();else{askNew=false;toTitle();}});
 $('pausebtn').addEventListener('click',()=>{au();if(mode==='play'&&winT<=0)paused=!paused;});
 {const fb=$('fsbtn'),de=document.documentElement;
   if(fb&&de&&de.requestFullscreen&&typeof matchMedia!=='undefined'&&matchMedia('(pointer:coarse)').matches)fb.hidden=false;

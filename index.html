@@ -56,7 +56,7 @@
     body{display:block;min-height:0;height:100vh;height:100dvh;background:#05080f}
     .wrap{width:100vw;height:100vh;height:100dvh;padding:0;display:flex;align-items:center;justify-content:center}
     header{display:contents}.ttl,.keys,.note{display:none}
-    .btns{position:fixed;top:calc(6px + env(safe-area-inset-top));right:calc(8px + env(safe-area-inset-right));z-index:20;flex-direction:column;align-items:flex-end;flex-wrap:nowrap;gap:5px}
+    .btns{position:fixed;top:calc(6px + env(safe-area-inset-top));right:calc(56px + env(safe-area-inset-right));z-index:20;flex-direction:column;align-items:flex-end;flex-wrap:nowrap;gap:5px}
     .quick{display:flex;gap:5px}.more{display:none;flex-direction:column;gap:5px;align-items:stretch}
     .btns.open .more{display:flex}
     .btns button{padding:5px 10px;font-size:15px;background:#10192acc;border-radius:9px}
@@ -103,7 +103,7 @@
 <div class="wrap">
   <header>
     <div class="ttl"><h1>SOUND OF THE MOUNTAIN</h1><div class="tag" data-t="Mira und der Klang des stummen Berges">Mira und der Klang des stummen Berges</div></div>
-    <div class="btns"><div class="quick"><button id="homebtn"></button><button id="mapbtn"></button><button id="menubtn" class="mb">☰</button></div><div class="more"><button id="sound"></button><button id="music"></button><button id="voice"></button><button id="cutbtn"></button><button id="restart"></button><button id="pausebtn"></button><button id="mpbtn"></button><button id="langbtn"></button><button id="fsbtn" hidden></button></div></div>
+    <div class="btns"><div class="quick"><button id="homebtn"></button><button id="mapbtn"></button><button id="mpbtn"></button><button id="menubtn" class="mb">☰</button></div><div class="more"><button id="sound"></button><button id="music"></button><button id="voice"></button><button id="cutbtn"></button><button id="restart"></button><button id="pausebtn"></button><button id="langbtn"></button><button id="fsbtn" hidden></button></div></div>
   </header>
   <div class="gamebox">
     <div id="namebox" hidden><div class="card"><h2 data-t="Wie heißt du?">Wie heißt du?</h2><p data-t="Gib deiner Figur einen Namen. Er erscheint in den Geschichten. Leer lassen: Mira.">Gib deiner Figur einen Namen. Er erscheint in den Geschichten. Leer lassen: Mira.</p><input id="nameIn" maxlength="14" placeholder="Mira" autocomplete="off" autocapitalize="words" spellcheck="false"><p class="sub" data-t="Farbe des Kleides">Farbe des Kleides</p><div id="dressRow"></div><button id="nameGo" data-t="Los geht's ▸">Los geht's ▸</button></div></div>
@@ -4733,7 +4733,7 @@ const OVSX=x=>800+(x-800)*1.5,OVSY=y=>450+(y-440)*.78;
 OVD.forEach(d=>{d.x=OVSX(d.x);d.y=OVSY(d.y);});
 OVR.forEach(R=>{R.c=[OVSX(R.c[0]),OVSY(R.c[1])];R.rx=R.r*1.5;R.ry=R.r*.78;R.lab=[R.c[0],R.c[1]-R.ry*.72];});
 OVP.forEach(p=>{const x=OVSX(p[0]),y=OVSY(p[1]);p[0]=x;p[1]=y;});
-const OVFIX=[[800,405],[610,470],[990,470],[800,525],[305,410],[182,500],[428,500],[800,712],[674,790],[926,790],[800,228],[674,150],[926,150],[1295,410],[1169,500],[1421,500],[1295,712],[1169,790],[1421,790]];
+const OVFIX=[[800,405],[610,470],[990,470],[800,525],[305,410],[182,500],[428,500],[800,712],[674,790],[926,790],[800,228],[926,150],[674,150],[1295,410],[1169,500],[1421,500],[1295,712],[1169,790],[1421,790]];
 OVP.forEach((p,i)=>{p[0]=OVFIX[i][0];p[1]=OVFIX[i][1];});
 [[800,470,800,335],[305,460,305,335],[800,730,800,637],[800,170,800,72],[1295,460,1295,335],[1295,740,1295,637]].forEach((q,i)=>{OVR[i].c=[q[0],q[1]];OVR[i].lab=[q[2],q[3]];});
 const OVB={x0:20,x1:1580,y0:30,y1:870};
@@ -5262,7 +5262,7 @@ const HT={
   NOTE:{de:'Tipp: Kurz nach dem Verlassen einer Kante kannst du noch springen. Der Dash lädt sich am Boden oder an einer Wand wieder auf. Brüchige Plattformen fallen kurz nach dem Betreten, Federn schleudern dich hoch, Kristalle laden den Dash in der Luft auf, Aufwind trägt dich nach oben. Wer in einem Level mehr als 20 Mal stürzt, sieht das Game Over und beginnt das Level neu. Die Sprachausgabe nutzt die Stimme deines Browsers und lässt sich mit „Stimme“ ein- und ausschalten. Dein Fortschritt wird automatisch gespeichert.',
         en:'Tip: You can still jump for a moment after leaving a ledge. The dash recharges on the ground or on a wall. Crumbling platforms fall shortly after you step on them, springs fling you upwards, crystals recharge your dash in mid-air, and updrafts carry you up. If you fall more than 20 times in one level, you see Game Over and restart the level. The voice uses your browser’s speech voice and can be switched on and off with “Voice”. Your progress is saved automatically.'}
 };
-{const mb=$('menubtn'),bs=$('menubtn')&&$('menubtn').parentNode;if(mb&&bs&&bs.classList){mb.addEventListener('click',()=>bs.classList.toggle('open'));document.querySelectorAll('.btns button').forEach(b=>{if(b.id!=='menubtn')b.addEventListener('click',()=>bs.classList.remove('open'));});}}
+{const mb=$('menubtn'),bs=mb&&mb.closest?mb.closest('.btns'):null;if(mb&&bs&&bs.classList){let mt=0;const tg=e=>{const n=Date.now();if(n-mt<350)return;mt=n;e.preventDefault&&e.preventDefault();bs.classList.toggle('open');};mb.addEventListener('click',tg);mb.addEventListener('touchend',tg);document.querySelectorAll('.btns button').forEach(b=>{if(b.id!=='menubtn')b.addEventListener('click',()=>bs.classList.remove('open'));});}}
 function setBtn(id,ic,lb){const b=$(id);if(b)b.innerHTML='<span class="ic">'+ic+'</span><span class="lbl">'+tr(lb)+'</span>';}
 function refreshBtns(){
   setBtn('sound',AU.on?'🔊':'🔇','Ton');setBtn('music',AU.music?'🎵':'🚫','Musik');setBtn('voice',AU.voice?'🗣️':'🤐','Stimme');

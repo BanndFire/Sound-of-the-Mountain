@@ -14,8 +14,8 @@
 <style>
   :root { color-scheme: dark; --bg1:#263b5a; --bg2:#101827; --ink:#f4f6ff; --panel:#18263a; --line:#7188aa; --btn:#263c5a; --btn2:#365579; --btnline:#7891b6; --muted:#c4d1e8; --accent:#ffdc82; }
   * { box-sizing: border-box; }
-  body { margin:0; min-height:100vh; display:grid; place-items:center; background:radial-gradient(ellipse at top,var(--bg1),var(--bg2) 70%); color:var(--ink); font-family:system-ui,sans-serif; }
-  .wrap { width:min(100vw,1040px); padding:14px; }
+  body { margin:0; min-height:100vh; min-height:100dvh; display:flex; justify-content:center; align-items:flex-start; background:radial-gradient(ellipse at top,var(--bg1),var(--bg2) 70%); color:var(--ink); font-family:system-ui,sans-serif; }
+  .wrap { width:min(100vw,1040px); padding:14px; margin:auto 0; }
   header { display:flex; align-items:center; justify-content:space-between; gap:12px; margin:0 2px 10px; flex-wrap:wrap; }
   h1 { margin:0; font-size:clamp(17px,3vw,24px); letter-spacing:.16em; color:var(--accent); }
   .tag { color:#b9c9e8; font-size:12px; }
@@ -72,6 +72,33 @@
   .touch.off{display:none!important}
   body:not([data-mode=play]) .touch{display:none!important}
   body.ctlopen:not([data-mode=play]) .touch:not(.off){display:block!important}
+  #lvbox{position:absolute;inset:0;z-index:7;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;padding:52px 134px 10px;overflow:auto;--a:#ffdc82;--p1:#18263acc;--p2:#18263ae6;--bd:#7188aabf;--g:#4a6a9a}
+  #lvbox[hidden]{display:none}
+  #lvbox button{font-family:inherit}
+  .lvFrame{width:min(100%,780px);margin:auto;border:2px solid var(--bd);border-radius:clamp(22px,5vw,46px);padding:clamp(10px,2.4vw,22px);background:linear-gradient(#0000,#0000);box-shadow:0 0 0 1px #0008,0 16px 50px #000a,inset 0 0 60px var(--g);display:flex;flex-direction:column;gap:clamp(8px,1.6vw,14px)}
+  .lvTitle{display:flex;align-items:center;gap:12px;border:2px solid var(--bd);border-radius:18px;background:var(--p2);padding:8px 14px}
+  .lvNum{flex:none;width:clamp(34px,6vw,46px);height:clamp(34px,6vw,46px);border-radius:50%;border:2px solid var(--a);color:var(--a);display:grid;place-items:center;font-size:clamp(16px,3vw,22px)}
+  .lvTitle h2{margin:0;font-size:clamp(17px,3.4vw,27px);color:#fff;font-weight:700;line-height:1.15}
+  .lvGrid{display:grid;grid-template-columns:1.05fr 1fr;gap:clamp(8px,1.6vw,14px);align-items:stretch}
+  .lvCol{display:flex;flex-direction:column;gap:clamp(8px,1.6vw,14px)}
+  .lvPanel{border:2px solid var(--bd);border-radius:18px;background:var(--p1);backdrop-filter:blur(3px);padding:clamp(9px,1.8vw,14px)}
+  .lvInfo{font-size:clamp(12px,1.9vw,14.5px);line-height:1.45;color:#eef3ff}.lvInfo p{margin:0 0 6px}
+  .lvCut{margin-top:8px;text-align:center}.lvCut h4{margin:0 0 6px;font-size:13px;color:var(--a);letter-spacing:.05em}
+  .lvCb{display:flex;gap:8px;justify-content:center}.lvCb button{flex:1;max-width:140px;background:#0006;border:1px solid var(--bd)}
+  .lvCb button:disabled{opacity:.35;cursor:default}
+  .lvPlay{flex:1;min-height:56px;border:2px solid var(--a);border-radius:18px;background:linear-gradient(var(--p1),var(--g));color:#fff;font-size:clamp(20px,4vw,30px);font-weight:700;letter-spacing:.08em;cursor:pointer}
+  .lvPlay:hover:not(:disabled){filter:brightness(1.25)}.lvPlay:disabled{opacity:.5;cursor:default}
+  .lvTab h3{margin:0 0 8px;text-align:center;font-size:clamp(14px,2.4vw,17px);color:var(--a);letter-spacing:.06em}
+  .lvRow{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:clamp(6px,1.2vw,10px) 2px;border-bottom:1px dashed #ffffff30;font-size:clamp(12px,2vw,15px);color:#e6edff}
+  .lvRow:last-child{border-bottom:0}.lvRow b{color:#fff;font-variant-numeric:tabular-nums}.lvRow b.red{color:#ff6b7f}
+  .dots{display:flex;gap:5px}.dots i{width:13px;height:13px;border-radius:50%;border:2px solid var(--a);display:block}.dots i.on{background:var(--a)}
+  .lvA{position:absolute;z-index:2;background:var(--p2);border:2px solid var(--bd);border-radius:14px;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;padding:8px 12px;font-size:20px}
+  .lvA span{font-size:12px;font-weight:600;max-width:90px;line-height:1.1;text-align:left}
+  .lvA:disabled{opacity:.25;cursor:default}.lvA:hover:not(:disabled){filter:brightness(1.3)}
+  .lvBack{left:8px;top:8px}.lvPrev{left:8px;top:50%;transform:translateY(-50%)}.lvNext{right:8px;top:50%;transform:translateY(-50%);flex-direction:row-reverse}
+  @media (max-width:900px){#lvbox{padding:52px 64px 10px}.lvA span{display:none}.lvBack span{display:inline}}
+  @media (max-width:760px){.lvGrid{grid-template-columns:1fr}}
+  body.lvopen .touch{display:none!important}
   #ctlbox{position:absolute;inset:0;display:grid;place-items:center;background:#060c18c8;z-index:6;overflow:auto}#ctlbox[hidden]{display:none}
   #ctlbox .card{background:#18263af2;border:2px solid var(--line);border-radius:16px;padding:14px 18px;width:min(94%,420px);text-align:center;box-shadow:0 12px 40px #000a}
   #ctlbox h2{font-size:17px;margin-bottom:8px}#ctlbox label{display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;margin:10px 0;text-align:left}#ctlbox input[type=range]{flex:1;max-width:190px}
@@ -1613,6 +1640,14 @@ Object.assign(EN,{
 'Kleine Hilfe: Es kommt seltener etwas von oben.':'Small help: things fall less often.',
 'Kleine Hilfe: Ein Verfolger weniger.':'Small help: one pursuer fewer.',
 'Kleine Hilfe: Der Verfolger ist langsamer.':'Small help: the pursuer is slower.'
+});
+Object.assign(EN,{
+'Zurück zur Welt':'Back to world','Vorheriges Level':'Previous level','Nächstes Level':'Next level','Cutszene':'Cutscene','Anfang':'Start','Ende':'End',
+'Spielen':'Play','Gesperrt':'Locked','Angaben':'Details','Tode':'Deaths','Bestzeit':'Best time','Zeit':'Time','Schwierigkeit':'Difficulty','Achtung':'Beware',
+'Sammle alle {c}, dann öffnet sich das Tor.':'Collect all {c} and the gate opens.','Sammle die {c} und erreiche das Ziel.':'Collect the {c} and reach the goal.',
+'Tarek folgt dir':'Tarek follows you','Etwas verfolgt dich':'Something is chasing you','Einbrechender Boden':'Collapsing floor','Herabfallende Steine':'Falling stones',
+'Steine und einbrechender Boden':'Stones and collapsing floor','Blitze':'Lightning','Stacheln':'Spikes','Fallen':'Traps','Zahnräder':'Gears','Wind':'Wind',
+'Bröckelnde Plattformen':'Crumbling platforms','Verschwindende Plattformen':'Vanishing platforms','Dunkelheit':'Darkness'
 });
 
 /* ===== LEVEL-BAUKASTEN ===== */
@@ -5152,7 +5187,7 @@ function emit(k,a,b,c,d){
     case 'wjump':sfx('wjump');burst(a,b,'#f5b2d0',7);break;
     case 'dash':sfx('dash');burst(a,b,'#9df4ff',12);break;
     case 'trail':fx.trail.push({x:a,y:b,life:.18});break;
-    case 'die':deathsLvl++;save.deaths=(save.deaths||0)+1;fx.shake=10;burst(a,b,'#ff7897',18);sfx('die');setStatus(deathsLvl>=16&&deathsLvl<=20?tf('Achtung: Noch {n} Stürze bis Game Over!',{n:21-deathsLvl}):'Nochmal! Versuch es weiter.');adpDie(c,a,b);break;
+    case 'die':deathsLvl++;if(L){if(!save.ld)save.ld={};save.ld[L.key]=(save.ld[L.key]||0)+1;}save.deaths=(save.deaths||0)+1;fx.shake=10;burst(a,b,'#ff7897',18);sfx('die');setStatus(deathsLvl>=16&&deathsLvl<=20?tf('Achtung: Noch {n} Stürze bis Game Over!',{n:21-deathsLvl}):'Nochmal! Versuch es weiter.');adpDie(c,a,b);break;
     case 'berry':{const k2=L.coll;sfx(k2==='note'?'note':'berry');burst(a,b,{note:'#ffe08a',pearl:'#ffd0e8',leaf:'#ffb050',drop:'#7fd0ff',lantern:'#ffd070',spark:'#8aeaff',rune:'#d0b0ff',ember:'#ff8a4a',skull:'#e8e4d4',cactus:'#9aff8a'}[k2]||'#ff6b91',14);setStatus(tf('{c} eingesammelt!',{c:tr((COLLN[k2]||COLLN.berry)[0])}));break;}
     case 'cp':sfx('cp');burst(a+10,b-35,'#7be0b0',12);setStatus('Checkpoint aktiviert!');break;
     case 'spring':sfx('spring');burst(a,b,'#ffe08a',8);break;
@@ -5176,6 +5211,7 @@ function emit(k,a,b,c,d){
 /* ---- Fluss ---- */
 const worldOpen=w=>unlockedL(idxOfWorld(w)[0])&&(w<4||!!save.act2)&&(w<7||!!save.act3)&&(w<10||!!save.act4)&&(w<13||!!save.act5)&&(w<16||!!save.act6);
 function goMap(w){
+  lvShut();
   if(isDone(IDX('w3g'))&&!save.spring){save.spring=true;writeSave();}
   if(w>=4&&!save.act2){if(!save.spring){save.spring=true;writeSave();}w=0;}
   if(w>=7&&!save.act3){if(isDone(IDX('w6g'))){startFall();return;}w=6;}
@@ -5220,6 +5256,7 @@ function startRise(){
   goMap(9);playAnim('rise',()=>playCut(STORY.skyarrive,()=>{save.act4=true;writeSave();goMap(10);banner={text:WORLDS[10].name,sub:WORLDS[10].sub,t:5};sfx('warp');}));
 }
 function playCut(def,after){
+  lvShut();
   mode='cut';cs={def,i:0,chars:0,t:0,after};startMusic(def.mus||TH[def.theme].mus);setAmb('none');{const kw=klangOf(def);setKlang(kw,klWorld);}cutLine();
 }
 function cutLine(){const ln=cs.def.lines[cs.i];cs.chars=0;speak(ln[0],nm(ln[1]));}
@@ -5230,6 +5267,7 @@ function cutAdvance(){
 }
 function endCut(){stopSpeak();const a=cs&&cs.after;cs=null;if(a)a();}
 function startLevelFlow(i){
+  lvShut();
   sfx('ui');const st=STORY[LDEF[i].st];
   if(st&&st.intro&&!isDone(i))playCut(st.intro,()=>beginLevel(i));else beginLevel(i);
 }
@@ -5247,6 +5285,7 @@ function beginLevel(i){
 }
 function onWin(){netSend({t:'win'});adpReset(L);
   const D=LDEF[cur],first=!isDone(cur),got=S.tk.filter(Boolean).length;firstClear=first;
+  if(!save.bt)save.bt={};if(!save.lt)save.lt={};save.lt[D.key]=lvlT;if(!save.bt[D.key]||lvlT<save.bt[D.key])save.bt[D.key]=lvlT;
   save.coll[D.key]=Math.max(save.coll[D.key]||0,got);save.done[D.key]=true;writeSave();
   if(L.finale&&!save.act5){cutMusic();fx.flash=0;startSkyFall([S.p.x+11-cam.x,S.p.y+15-cam.y]);return;}
   sfx('win');winT=1.6;
@@ -5358,7 +5397,7 @@ function mapClick(h){
   if(h>=300){const w=h-300;if(worldOpen(w)){sfx('ui');goMap(w);}else{sfx('lock');setStatus('Diese Welt ist noch gesperrt.');}return;}
   if(h>=200){const k=h-200;if(k===0){sfx('ui');goMap(0);}else if(k===1){if(worldOpen(4)){sfx('ui');goMap(4);}else{sfx('lock');setStatus('Dieses Dorf kennst du noch nicht.');}}else if(k===2){if(worldOpen(7)||(!save.act3&&isDone(IDX('w6g')))){sfx('ui');goMap(7);}else{sfx('lock');setStatus('Dieser Ort ist noch verborgen.');}}else if(k===3){if(worldOpen(10)||(!save.act4&&isDone(IDX('w9g')))){sfx('ui');goMap(10);}else{sfx('lock');setStatus('Dieser Ort ist noch verborgen.');}}else if(k===4){if(worldOpen(13)||(!save.act5&&isDone(IDX('w12f')))){sfx('ui');goMap(13);}else{sfx('lock');setStatus('Diese Wüste ist noch verborgen.');}}else{if(worldOpen(16)||(!save.act6&&isDone(IDX('w15g')))){sfx('ui');goMap(16);}else{sfx('lock');setStatus('Dieser Ort ist noch verborgen.');}}return;}
   if(h===100){sfx('portal');goMap(world+1);return;}
-  const li=idx[h];if(unlockedL(li))startLevelFlow(li);else{sfx('lock');setStatus('Gesperrt: Schaffe zuerst das Level davor.');}
+  const li=idx[h];if(unlockedL(li)){sfx('ui');lvOpen(li);}else{sfx('lock');setStatus('Gesperrt: Schaffe zuerst das Level davor.');}
 }
 
 /* ---- Weltkarte ---- */
@@ -5399,6 +5438,7 @@ function ovUp(e){
 }
 function onKeyDown(e){
   const k=e.code;au();
+  if(lvI>=0){if(!(e.target&&e.target.tagName==='INPUT')){e.preventDefault();lvKey(k);return;}}
   if(e.target&&e.target.tagName==='INPUT'){if(k==='Enter'||k==='NumpadEnter'){e.preventDefault();nameDone();}else if(k==='Escape')nameCancel();return;}
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Space','ShiftLeft','ShiftRight','Enter','Tab'].includes(k))e.preventDefault();
   const first=!keys[k];keys[k]=true;if(!first)return;
@@ -5416,7 +5456,7 @@ function onKeyDown(e){
   if(mode==='cuts'){if(k==='Escape')goMap(world);else if(k==='ArrowRight')cutsTab(cg.tab+1);else if(k==='ArrowLeft')cutsTab(cg.tab-1);return;}
   if(mode==='cut'){if(k==='Space'||k==='Enter')cutAdvance();else if(k==='Escape')endCut();return;}
   if(mode==='map'){
-    if(k==='Enter'||k==='Space'){const n=nextLevel();if(n>=0&&LDEF[n].w===world)startLevelFlow(n);else if(n>=0){goMap(LDEF[n].w);}}
+    if(k==='Enter'||k==='Space'){const n=nextLevel();if(n>=0&&LDEF[n].w===world)lvOpen(n);else if(n>=0){goMap(LDEF[n].w);}}
     else if(k==='ArrowRight'||k==='KeyD'){const w=Math.min(15,world+1);if(worldOpen(w))goMap(w);}
     else if(k==='ArrowLeft'||k==='KeyA'){goMap(Math.max(0,world-1));}
     else if(k==='Escape')toTitle();
@@ -5609,7 +5649,82 @@ function frame(t){
 }
 AU.onThunder=()=>{fx.flash=.9;};
 loadSave();applyLang();setStatus('Klicke auf „Neues Spiel“.');
-window.__sotm={keys,OVP,OVR,OVB,REGION,WORLDS_:0,MAPN,MAPP,tr,goOv,OV,netOpen,netHost,netJoin,netAcceptAnswer,netShut,NET,EN,WORLDS,playAnim,setAnimT(t){if(anim)anim.t=t;},LDEF,LEVELS,save,get mode(){return mode;},goMap,beginLevel,playCut,STORY,titleAction,emit,newState,step,L:()=>L,S:()=>S,unlockAll(){LDEF.forEach(d=>save.done[d.key]=true);save.spring=true;save.act2=true;save.act3=true;save.act4=true;save.act5=true;},openCuts,get mapPick(){return mapPick;},set mapPick(v){mapPick=v;},pickDress,get save2(){return save;},nameDone,openName,startOver,startAct2,get chainT(){return chainT;},afterLevel,setCur(i){cur=i;},PLAYER};
+
+/* ---- Level-Übersicht ---- */
+const lvImg=new Map();let lvI=-1;
+const hexA=(h,a)=>{h=String(h).replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16)||0;return 'rgba('+(n>>16&255)+','+(n>>8&255)+','+(n&255)+','+a+')';};
+function lvShot(i){
+  if(lvImg.has(i))return lvImg.get(i);
+  const oL=L,oS=S;let url='';
+  try{const l=LEVELS[i];if(!l.decorated){decorate(l);l.decorated=true;}const s=newState(l,0);L=l;S=s;
+    const c={x:clamp(s.p.x-W*.3,0,Math.max(0,l.W-W)),y:clamp(s.p.y-H*.55,0,Math.max(0,l.H-H)),lead:.38};
+    drawLevel(l,s,c,performance.now()/1000,{parts:[],trail:[],shake:0,flash:0});
+    url=canvas.toDataURL('image/jpeg',.7);}catch(e){url='';}
+  L=oL;S=oS;lvImg.set(i,url);return url;
+}
+function lvDiff(i){const D=LDEF[i],ws=idxOfWorld(D.w),k=Math.max(0,ws.indexOf(i)),n=Math.max(1,ws.length-1);return clamp(Math.round(1+(D.w/18)*2.6+(k/n)*1.1),1,5);}
+function lvInfo(i){
+  const l=LEVELS[i],D=LDEF[i],a=[];const cn=COLLN[l.coll]||COLLN.berry;
+  a.push(l.gated?tf('Sammle alle {c}, dann öffnet sich das Tor.',{c:tr(cn[2]).trim()}):tf('Sammle die {c} und erreiche das Ziel.',{c:tr(cn[2]).trim()}));
+  const f=[];
+  if(l.chasers&&l.chKind==='tarek')f.push('Tarek folgt dir');else if(l.chasers)f.push('Etwas verfolgt dich');
+  if(l.storm){const k=l.storm.kind;f.push(k==='floor'?'Einbrechender Boden':k==='stone'?'Herabfallende Steine':k==='mix'?'Steine und einbrechender Boden':'Blitze');}
+  if(l.spikes&&l.spikes.length)f.push('Stacheln');
+  if(l.crush&&l.crush.length)f.push('Fallen');
+  if(l.gears&&l.gears.length)f.push('Zahnräder');
+  if(l.winds&&l.winds.length)f.push('Wind');
+  if(l.crumbles&&l.crumbles.length)f.push('Bröckelnde Plattformen');
+  if(l.vans&&l.vans.length)f.push('Verschwindende Plattformen');
+  if(l.vis)f.push('Dunkelheit');
+  if(f.length)a.push(tr('Achtung')+': '+f.slice(0,5).map(tr).join(' · '));
+  return a;
+}
+function lvFmt(t){return t>0?fmtT(t):'–';}
+function lvBox(){let b=$('lvbox');if(b)return b;b=document.createElement('div');b.id='lvbox';b.hidden=true;(document.querySelector('.gamebox')||document.body).appendChild(b);
+  b.addEventListener('keydown',e=>e.stopPropagation());b.addEventListener('keyup',e=>e.stopPropagation());return b;}
+function lvOpen(i){
+  const D=LDEF[i],l=LEVELS[i],ws=idxOfWorld(D.w),k=ws.indexOf(i),th=TH[D.theme]||TH.dusk;
+  lvI=i;world=D.w;const b=lvBox(),st=STORY[D.st],un=unlockedL(i),done=isDone(i);
+  const acc=th.p[1],c0=th.sky[0],c1=th.sky[1],img=lvShot(i);
+  b.style.setProperty('--a',acc);b.style.setProperty('--p1',hexA(c0,.78));b.style.setProperty('--p2',hexA(c0,.9));b.style.setProperty('--bd',hexA(acc,.75));b.style.setProperty('--g',hexA(c1,.55));
+  b.style.backgroundImage=img?'linear-gradient(#050a1455,#050a1477),url('+img+')':'linear-gradient('+c0+','+c1+')';
+  const prev=k>0,next=k<ws.length-1,T=tr;
+  const got=save.coll[D.key]||0,tot=l.berries.length,cn=COLLN[l.coll]||COLLN.berry;
+  const bt=(save.bt||{})[D.key]||0,lt=(save.lt||{})[D.key]||0,dd=(save.ld||{})[D.key]||0,df=lvDiff(i);
+  let dots='';for(let q=0;q<5;q++)dots+='<i class="'+(q<df?'on':'')+'"></i>';
+  const info=lvInfo(i).map(s=>'<p>'+s+'</p>').join('');
+  b.innerHTML='<button class="lvA lvBack" id="lvBack">↩ <span>'+T('Zurück zur Welt')+'</span></button>'
+   +'<button class="lvA lvPrev" id="lvPrev"'+(prev?'':' disabled')+'>◀<span>'+T('Vorheriges Level')+'</span></button>'
+   +'<button class="lvA lvNext" id="lvNext"'+(next?'':' disabled')+'>▶<span>'+T('Nächstes Level')+'</span></button>'
+   +'<div class="lvFrame"><div class="lvTitle"><b class="lvNum">'+(k+1)+'</b><h2>'+T(D.name)+'</h2></div>'
+   +'<div class="lvGrid"><div class="lvCol"><div class="lvPanel"><div class="lvInfo">'+info+'</div>'
+   +'<div class="lvCut"><h4>🎬 '+T('Cutszene')+'</h4><div class="lvCb"><button id="lvIn"'+(st&&st.intro&&un?'':' disabled')+'>'+T('Anfang')+'</button><button id="lvOut"'+(st&&st.outro&&done?'':' disabled')+'>'+T('Ende')+'</button></div></div></div>'
+   +'<button class="lvPlay" id="lvPlay"'+(un?'':' disabled')+'>'+(un?'▶ '+T('Spielen'):'🔒 '+T('Gesperrt'))+'</button></div>'
+   +'<div class="lvPanel lvTab"><h3>'+T('Angaben')+'</h3>'
+   +'<div class="lvRow"><span>'+T(cn[1])+'</span><b>'+got+' / '+tot+'</b></div>'
+   +'<div class="lvRow"><span>'+T('Tode')+'</span><b class="red">'+dd+'</b></div>'
+   +'<div class="lvRow"><span>'+T('Bestzeit')+'</span><b>'+lvFmt(bt)+'</b></div>'
+   +'<div class="lvRow"><span>'+T('Zeit')+'</span><b>'+lvFmt(lt)+'</b></div>'
+   +'<div class="lvRow"><span>'+T('Schwierigkeit')+'</span><b class="dots">'+dots+'</b></div></div></div></div>';
+  b.hidden=false;if(document.body&&document.body.classList)document.body.classList.add('lvopen');
+  const g=id=>$(id);
+  g('lvBack').onclick=()=>{sfx('ui');lvShut();};
+  if(prev)g('lvPrev').onclick=()=>{sfx('ui');lvOpen(ws[k-1]);};
+  if(next)g('lvNext').onclick=()=>{sfx('ui');lvOpen(ws[k+1]);};
+  if(un)g('lvPlay').onclick=()=>{lvShut();startLevelFlow(i);};
+  const cut=def=>{lvShut();playCut(def,()=>{goMap(D.w);lvOpen(i);});};
+  if(st&&st.intro&&un)g('lvIn').onclick=()=>{sfx('ui');cut(st.intro);};
+  if(st&&st.outro&&done)g('lvOut').onclick=()=>{sfx('ui');cut(st.outro);};
+  setStatus('Wähle ein Level.');
+}
+function lvShut(){lvI=-1;const b=$('lvbox');if(b)b.hidden=true;if(document.body&&document.body.classList)document.body.classList.remove('lvopen');}
+function lvKey(k){const ws=idxOfWorld(LDEF[lvI].w),j=ws.indexOf(lvI);
+  if(k==='Escape'||k==='Backspace'){lvShut();}
+  else if(k==='Enter'||k==='Space'){if(unlockedL(lvI)){const i=lvI;lvShut();startLevelFlow(i);}}
+  else if(k==='ArrowLeft'||k==='KeyA'){if(j>0)lvOpen(ws[j-1]);}
+  else if(k==='ArrowRight'||k==='KeyD'){if(j<ws.length-1)lvOpen(ws[j+1]);}}
+
+window.__sotm={lvOpen,lvShut,keys,OVP,OVR,OVB,REGION,WORLDS_:0,MAPN,MAPP,tr,goOv,OV,netOpen,netHost,netJoin,netAcceptAnswer,netShut,NET,EN,WORLDS,playAnim,setAnimT(t){if(anim)anim.t=t;},LDEF,LEVELS,save,get mode(){return mode;},goMap,beginLevel,playCut,STORY,titleAction,emit,newState,step,L:()=>L,S:()=>S,unlockAll(){LDEF.forEach(d=>save.done[d.key]=true);save.spring=true;save.act2=true;save.act3=true;save.act4=true;save.act5=true;},openCuts,get mapPick(){return mapPick;},set mapPick(v){mapPick=v;},pickDress,get save2(){return save;},nameDone,openName,startOver,startAct2,get chainT(){return chainT;},afterLevel,setCur(i){cur=i;},PLAYER};
 mode='title';ui.lvl.textContent=tr('Titel');
 requestAnimationFrame(frame);
 canvas.addEventListener('pointerdown',()=>{if(mode==='title'&&!AU.cur){au();startMusic('title');setAmb('wind');}},{once:false});
